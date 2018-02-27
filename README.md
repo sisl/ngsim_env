@@ -5,11 +5,11 @@
 - It also does not contain the human driver data you need for the environment to work. See [NGSIM.jl](https://github.com/sisl/NGSIM.jl) for that.
 
 ## Demo
-### Hierarchical GAIL in a single-agent environment
-![hgail-single](media/ngsim_env_hgail.gif)
+### GAIL in a sing-agent environment
+![gail-multi]()
 
-### GAIL in a multi-agent environment
-![gail-multi](media/multiagent_ngsim_env_gail.gif)
+### Single agent GAIL and PS-GAIL in a multi-agent environment
+![gail-multi]()
 
 # Install
 - see [`docs/install.md`](docs/install.md)
