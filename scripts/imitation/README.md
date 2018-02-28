@@ -42,3 +42,6 @@ visualize*.ipynb
 multiagent_curriculum_training.py
  * this is where we implement curriculum training for the multiagent models. It is pretty straightforward, but essentially it runs a model by initially training with 10 agents for 200 iterations, then using that policy as the initalization for the next model trained on 20 agents, and so forth. 
  * You can specify the things like n_itrs each, n_envs_start, and n_envs_end, but we used the default.
+
+run_n_agents_vs_perf_tests.sh
+ * This bash script runs a combination of validate.py (doing a multiagent and singleagent in parallel, 20 processes each) and visualize.py, generating rmse_[attr]_[nagents].png files (in this directory). 
