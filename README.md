@@ -5,10 +5,10 @@
 - It also does not contain the human driver data you need for the environment to work. See [NGSIM.jl](https://github.com/sisl/NGSIM.jl) for that.
 
 ## Demo
-### GAIL in a sing-agent environment
+### GAIL in a single-agent environment
 ![](single_agent_gail.gif)
 
-### Single agent GAIL and PS-GAIL in a multi-agent environment
+### Single agent GAIL (top) and PS-GAIL (bottom) in a multi-agent environment
 ![](single_multi_model_2_seed_1.gif)
 
 # Overview
