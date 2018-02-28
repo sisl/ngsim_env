@@ -6,10 +6,10 @@
 
 ## Demo
 ### GAIL in a sing-agent environment
-![gail-multi]()
+![](single_agent_gail.gif)
 
 ### Single agent GAIL and PS-GAIL in a multi-agent environment
-![gail-multi]()
+![](single_multi_model_2_seed_1.gif)
 
 # Install
 - see [`docs/install.md`](docs/install.md)
