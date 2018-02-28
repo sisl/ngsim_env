@@ -20,7 +20,8 @@ For install directions for ngsim_env and hgail, see the repos, or a guide we ada
 2. Validate the policy (this creates trajectories on all NGSIM sections using the trained policy) python validate.py --n_proc 5 --exp_dir ../../data/experiments/NGSIM-gail/ --params_filename itr_1000.npz --random_seed 42
 3. Visualize the results:Open up a jupyter notebook and play around with the visualize*.ipynb files. They should be pretty intuitive.
 
-### To reproduce our experiments for the multiagent gail paper submitted to IROS, navigate to ngsim_env/scripts/imitation and read the readme there
+### To reproduce our experiments for the multiagent gail paper submitted to IROS, see 
+[`scripts/imitation/README.md`](scripts/imitation/README.md)
 
 ## Install
 - see [`docs/install.md`](docs/install.md)
