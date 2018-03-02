@@ -13,7 +13,8 @@
 ![](media/single_multi_model_2_seed_1.gif)
 
 # Overview
-For install directions for ngsim_env and hgail, see the repos, or a guide we adapted and made more robust to issues we encountered: https://github.com/raunakbh92/InstallInstructions/blob/master/install_ngsim_env_hgail.md
+For install directions for ngsim_env and hgail, see the repos, or a guide we adapted and made more robust to issues we encountered: 
+- see [`docs/install_env_gail_full.md`](docs/install_env_gail_full.md)
 
 ### To train and run a single agent GAIL policy: 
 0. Navigate to ngsim_env/scripts/imitation
@@ -26,6 +27,7 @@ For install directions for ngsim_env and hgail, see the repos, or a guide we ada
 
 ## Install
 - see [`docs/install.md`](docs/install.md)
+- see [`docs/install_env_gail_full.md`](docs/install_env_gail_full.md)
 
 ## Training
 - see [`docs/training.md`](docs/training.md)
