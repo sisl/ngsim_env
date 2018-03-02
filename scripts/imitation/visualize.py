@@ -13,24 +13,17 @@ if len(sys.argv) > 1:
     file_name_id = str(sys.argv[1])
 
 model_labels = [
-#    'singleagent_def_1_fine',
-#    'singleagent_def_2_fine',
+    'singleagent_def_1_fine',
+    'singleagent_def_2_fine',
     'singleagent_def_3_fine',
-#    'multiagent_curr_1_fine',
-#    'multiagent_curr_2_fine',
+    'multiagent_curr_1_fine',
+    'multiagent_curr_2_fine',
     'multiagent_curr_3_fine'
 ]
 
 print("Loading model trajectories...", flush=True)
 traj_lab_dict = visualize_utils.get_trajs_dict(model_labels)
 print("Done.", flush=True)
-
-'''
-all_multi_trajs = visualize_utils.combine_trajs([traj_lab_dict[model_label][0] \
-				for model_label in model_labels if 'multi' in model_label])
-all_single_trajs = visualize_utils.combine_trajs([traj_lab_dict[model_label][0] \
-				for model_label in model_labels if 'single' in model_label])
-'''
 
 def visualize_trajectories(trajs, length, label='', color='blue', attr='rmse', style='solid'):
     rmses = []
@@ -103,7 +96,15 @@ for attr in attrs:
     plt.savefig(filename)
     print("Saved:", filename, flush=True)
 
-'''
+    
+
+# averages
+all_multi_trajs = visualize_utils.combine_trajs([traj_lab_dict[model_label][0] \
+				for model_label in model_labels if 'multi' in model_label])
+all_single_trajs = visualize_utils.combine_trajs([traj_lab_dict[model_label][0] \
+				for model_label in model_labels if 'single' in model_label])
+
+
 for attr in attrs:
     plt.figure(figsize=(16,4))
     plot_validation(all_single_trajs, ngsim_labels, color='black', attr=attr, style='dotted', length=length)
@@ -112,6 +113,4 @@ for attr in attrs:
     filename = attr + '_avg_' + file_name_id + '.png'
     plt.savefig(filename)
     print("Saved:", filename, flush=True)
-'''
-
 
