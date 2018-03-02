@@ -7,10 +7,10 @@
 
 ## Demo
 ### GAIL in a single-agent environment
-![](single_agent_gail.gif)
+![](media/single_agent_gail.gif)
 
 ### Single agent GAIL (top) and PS-GAIL (bottom) in a multi-agent environment
-![](single_multi_model_2_seed_1.gif)
+![](media/single_multi_model_2_seed_1.gif)
 
 # Overview
 For install directions for ngsim_env and hgail, see the repos, or a guide we adapted and made more robust to issues we encountered: https://github.com/raunakbh92/InstallInstructions/blob/master/install_ngsim_env_hgail.md
