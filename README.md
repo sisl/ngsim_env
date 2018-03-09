@@ -4,6 +4,8 @@
 - This repository does not contain a [gail](https://arxiv.org/abs/1606.03476) / [infogail](https://arxiv.org/abs/1703.08840) / hgail implementation
   - Clone from: https://github.com/sisl/hgail
 - It also does not contain the human driver data you need for the environment to work. See [NGSIM.jl](https://github.com/sisl/NGSIM.jl) for that.
+- Figure below shows a diagram of the dependencies for ngsim_env
+![dependecies](docs/ngsim_env_Dependencies.png)
 
 ## Demo
 ### GAIL in a single-agent environment
