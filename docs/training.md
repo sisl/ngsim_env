@@ -17,7 +17,7 @@
 - see `scripts/imitation/hyperparams.py` for default hyperparameters
 
 ### Monitoring
-- there's a pretty extensive [tensorboard] (https://www.tensorflow.org/get_started/summaries_and_tensorboard) associated with the `imitate.py` script
+- there's a pretty extensive [tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard) associated with the `imitate.py` script
 - if you're interested in how it works, see the file `scripts/imitation/auto_validator.py`
 - in practice, run it by navigating to the summaries directory as specified above and executing `tensorboard --logdir=. --port 55555`, where `55555` is just some random port not in use
 
