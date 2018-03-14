@@ -56,7 +56,7 @@ echo "export LD_PRELOAD=${HOME}/.julia/v0.6/Conda/deps/usr/lib/libz.so" >> ~/.ba
 source ~/.bashrc
 # manually add AutoEnvs
 echo "push!(LOAD_PATH, \"$(pwd)/ngsim_env/julia/AutoEnvs\")" >> ~/.juliarc.jl
-source activate rllab3
+
 # enter a julia interpreter
 julia
   # set python path (replace with your miniconda3 install location)
@@ -68,6 +68,7 @@ julia
     # takes a while
       # If this errors ImportError('No module named mpl_toolkits.mplot3d',), you need to upgrade matplotlib
   >>quit()
+# The following steps (until and including python quit()) are only required if julia gives an import error while using PyPlot
 pip install --upgrade matplotlib
 # Check the install went through correctly
 python
