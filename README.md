@@ -2,20 +2,15 @@
 # NGSIM Env
 - This is a rllab environment for learning human driver models with imitation learning
 - This repository does not contain a [gail](https://arxiv.org/abs/1606.03476) / [infogail](https://arxiv.org/abs/1703.08840) / hgail implementation
-  - Clone from: https://github.com/sisl/hgail
-  - The reason ngsim_env does not contain the GAIL algorithm implementation is to enable the codebase to be more modular. This
-  design decision enables ngsim_env to be used as an environment in which any imitation learning algorithm can be tested.
-  Similarly, this design decision enables the GAIL algorithm to be a separate module that can be tested in any environment
-  be that ngsim_env or otherwise.
-- It also does not contain the human driver data you need for the environment to work. See [NGSIM.jl](https://github.com/sisl/NGSIM.jl) for that.
+  - The reason ngsim_env does not contain the GAIL algorithm implementation is to enable the codebase to be more modular. This design decision enables ngsim_env to be used as an environment in which any imitation learning algorithm can be tested. Similarly, this design decision enables the GAIL algorithm to be a separate module that can be tested in any environment be that ngsim_env or otherwise.
+- It also does not contain the human driver data you need for the environment to work. The installation process below gets the data from [NGSIM.jl](https://github.com/sisl/NGSIM.jl).
 - Figure below shows a diagram of the dependencies for ngsim_env
 ![dependecies](docs/ngsim_env_Dependencies.png)
 
-# Overview
-For install directions for ngsim_env and hgail, see the repos, or a guide we adapted and made more robust to issues we encountered: 
-- see [`docs/install_env_gail_full.md`](docs/install_env_gail_full.md)
+# Installation Process
+Install instructions are at [`docs/install_env_gail_full.md`](docs/install_env_gail_full.md)
 
-### To train and run a single agent GAIL policy: 
+# Train and run a single agent GAIL policy: 
 0. Navigate to ngsim_env/scripts/imitation
 1. Train a policy, this involves running imitate.py (see ngsim_env/docs/training.md) python imitate.py --exp_name NGSIM-gail --n_itr 1000 --policy_recurrent True
 2. Validate the policy (this creates trajectories on all NGSIM sections using the trained policy) python validate.py --n_proc 5 --exp_dir ../../data/experiments/NGSIM-gail/ --params_filename itr_1000.npz --random_seed 42
@@ -23,10 +18,6 @@ For install directions for ngsim_env and hgail, see the repos, or a guide we ada
 
 ### To reproduce our experiments for the multiagent gail paper submitted to IROS, see 
 [`scripts/imitation/README.md`](scripts/imitation/README.md)
-
-## Install
-- see [`docs/install.md`](docs/install.md)
-- see [`docs/install_env_gail_full.md`](docs/install_env_gail_full.md)
 
 ## Training
 - see [`docs/training.md`](docs/training.md)
