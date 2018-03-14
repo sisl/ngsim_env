@@ -12,8 +12,14 @@ Install instructions are at [`docs/install_env_gail_full.md`](docs/install_env_g
 
 # Train and run a single agent GAIL policy: 
 0. Navigate to ngsim_env/scripts/imitation
-1. Train a policy, this involves running imitate.py (see ngsim_env/docs/training.md) python imitate.py --exp_name NGSIM-gail --n_itr 1000 --policy_recurrent True
-2. Validate the policy (this creates trajectories on all NGSIM sections using the trained policy) python validate.py --n_proc 5 --exp_dir ../../data/experiments/NGSIM-gail/ --params_filename itr_1000.npz --random_seed 42
+1. Train a policy, this involves running imitate.py 
+```bash
+python imitate.py --exp_name NGSIM-gail --n_itr 1000 --policy_recurrent True
+```
+2. Run the trained policy by using it to drive a car (this creates trajectories on all NGSIM sections using the trained policy). The training step was called imitate. This step is called validate.
+```bash
+python validate.py --n_proc 5 --exp_dir ../../data/experiments/NGSIM-gail/ --params_filename itr_1000.npz --random_seed 42
+```
 3. Visualize the results:Open up a jupyter notebook and play around with the visualize*.ipynb files. They should be pretty intuitive.
 
 ## Training process: details
