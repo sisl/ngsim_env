@@ -11,13 +11,6 @@
 - Figure below shows a diagram of the dependencies for ngsim_env
 ![dependecies](docs/ngsim_env_Dependencies.png)
 
-## Demo
-### GAIL in a single-agent environment
-![](media/single_agent_gail.gif)
-
-### Single agent GAIL (top) and PS-GAIL (bottom) in a multi-agent environment
-![](media/single_multi_model_2_seed_1.gif)
-
 # Overview
 For install directions for ngsim_env and hgail, see the repos, or a guide we adapted and made more robust to issues we encountered: 
 - see [`docs/install_env_gail_full.md`](docs/install_env_gail_full.md)
@@ -43,3 +36,10 @@ For install directions for ngsim_env and hgail, see the repos, or a guide we ada
 - The python code uses [pyjulia](https://github.com/JuliaPy/pyjulia) to instantiate a Julia interpreter, see the `python` directory for details
 - The driving environment is then built in Julia, see the `julia` directory for details
 - Each time the environment is stepped forward, execution passes from python to julia, updating the environment
+
+## Demo
+### GAIL in a single-agent environment
+![](media/single_agent_gail.gif)
+
+### Single agent GAIL (top) and PS-GAIL (bottom) in a multi-agent environment
+![](media/single_multi_model_2_seed_1.gif)
