@@ -16,10 +16,7 @@ Install instructions are at [`docs/install_env_gail_full.md`](docs/install_env_g
 2. Validate the policy (this creates trajectories on all NGSIM sections using the trained policy) python validate.py --n_proc 5 --exp_dir ../../data/experiments/NGSIM-gail/ --params_filename itr_1000.npz --random_seed 42
 3. Visualize the results:Open up a jupyter notebook and play around with the visualize*.ipynb files. They should be pretty intuitive.
 
-### To reproduce our experiments for the multiagent gail paper submitted to IROS, see 
-[`scripts/imitation/README.md`](scripts/imitation/README.md)
-
-## Training
+## Training process: details
 - see [`docs/training.md`](docs/training.md)
 
 ## How's this work?
@@ -29,6 +26,9 @@ Install instructions are at [`docs/install_env_gail_full.md`](docs/install_env_g
 - Each time the environment is stepped forward, execution passes from python to julia, updating the environment
 
 ## Demo
+### To reproduce our experiments for the multiagent gail paper submitted to IROS, see 
+[`scripts/imitation/README.md`](scripts/imitation/README.md)
+
 ### GAIL in a single-agent environment
 ![](media/single_agent_gail.gif)
 
