@@ -20,12 +20,16 @@ python imitate.py --exp_name NGSIM-gail --n_itr 1000 --policy_recurrent True
 ```bash
 python validate.py --n_proc 5 --exp_dir ../../data/experiments/NGSIM-gail/ --params_filename itr_1000.npz --random_seed 42
 ```
-3. Visualize the results:Open up a jupyter notebook and play around with the visualize*.ipynb files. They should be pretty intuitive.
+3. Visualize the results: Open up a jupyter notebook and use the visualize*.ipynb files.
+  - the visualize family of ipynb's have headers at the top of each file describing what it does.
+    - visualize.ipynb is for extracting the Root Mean Square Error
+    - visualize_trajectories.ipynb creates videos such as the one shown below in the demo section
+    - visualize_emergent.ipynb calculates the emergent metrics such as offroad duration and collision rate
 
 ## Training process: details
 - see [`docs/training.md`](docs/training.md)
 
-## How's this work?
+## How this works?
 - See README files individual directories for details, but a high-level description is:
 - The python code uses [pyjulia](https://github.com/JuliaPy/pyjulia) to instantiate a Julia interpreter, see the `python` directory for details
 - The driving environment is then built in Julia, see the `julia` directory for details
