@@ -168,9 +168,11 @@ julia
 cd ~/ngsim_env/scripts
 
 julia extract_ngsim_demonstrations.jl
+
+# You have finished installation. Now you are ready to train the policy
+# The following lines train a policy.
+# Will take at least a couple of hours depending on the specific scenario
 cd imitation
 python imitate.py [options here]
 ```
-See installation ![logFile](https://github.com/raunakbh92/InstallInstructions/edit/master/logFiles/installLog_hgail)
-
 *this was originally compiled by ![@raunakbh92](https://github.com/raunakbh92/InstallInstructions/edit/master/install_ngsim_env_hgail.md)*
