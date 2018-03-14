@@ -28,6 +28,7 @@ cd ..
 
 ## Install julia
 ```bash
+source deactivate
 # install our own version of julia
 wget https://julialang-s3.julialang.org/bin/linux/x64/0.6/julia-0.6.2-linux-x86_64.tar.gz
 tar -xf julia-0.6.2-linux-x86_64.tar.gz
