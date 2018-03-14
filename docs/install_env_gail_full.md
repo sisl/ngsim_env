@@ -79,7 +79,7 @@ julia
   >>using AutoEnvs
   >>quit()
 ```
-Here is a [logfile](logFiles/installLog_ngsim) for the above. Next, we will get the NGSIM data and run a few tests with julia and python to make sure everything is fine
+Next, we will get the NGSIM data and run a few tests with julia and python to make sure everything is fine
 
 ### download NGSIM data
 ```bash
@@ -145,7 +145,7 @@ python runtests.py
 
 ```
 
-# Installation instructions for hgail
+# Installation instructions for the imitation learning algorithm
 ```bash
 cd ~
 git clone https://github.com/sisl/hgail.git
@@ -165,11 +165,7 @@ julia
 cd ~/ngsim_env/scripts
 
 julia extract_ngsim_demonstrations.jl
-
-# You have finished installation. Now you are ready to train the policy
-# The following lines train a policy.
-# Will take at least a couple of hours depending on the specific scenario
-cd imitation
-python imitate.py [options here]
 ```
+Congratulations!! You have completed the installation process. Navigate back to main readme page to train a policy
+
 *this was originally compiled by ![@raunakbh92](https://github.com/raunakbh92/InstallInstructions/edit/master/install_ngsim_env_hgail.md)*
