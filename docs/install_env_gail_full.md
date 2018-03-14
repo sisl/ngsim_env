@@ -144,7 +144,6 @@ python runtests.py
   # Then run the test again and it should be fine
 
 ```
-Here is a [logfile](logFiles/ngsim_test_log) for the above
 
 # Installation instructions for hgail
 ```bash
