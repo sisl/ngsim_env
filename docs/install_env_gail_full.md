@@ -166,6 +166,7 @@ cd ~/ngsim_env/scripts
 
 julia extract_ngsim_demonstrations.jl
 ```
-Congratulations!! You have completed the installation process. Navigate back to main readme page to train a policy
+Congratulations!! You have completed the installation process. Navigate back to main [readme](https://github.com/sisl/ngsim_env/blob/master/README.md)
+page to train a policy
 
-*this was originally compiled by ![@raunakbh92](https://github.com/raunakbh92/InstallInstructions/edit/master/install_ngsim_env_hgail.md)*
+*this was originally compiled by ![raunakbh92](https://github.com/raunakbh92/InstallInstructions/edit/master/install_ngsim_env_hgail.md)*
