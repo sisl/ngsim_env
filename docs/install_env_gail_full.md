@@ -42,7 +42,7 @@ source ~/.bashrc
 ### julia
 ```bash
 source activate rllab3 # this is probably not necessary, but just in case
-git clone https://github.com/wulfebw/ngsim_env.git
+git clone https://github.com/sisl/ngsim_env.git
 # this takes a long time
 julia ngsim_env/julia/deps/build.jl
 
@@ -147,7 +147,7 @@ Here is a [logfile](logFiles/ngsim_test_log) for the above
 # Installation instructions for hgail
 ```bash
 cd ~
-git clone https://github.com/wulfebw/hgail
+git clone https://github.com/sisl/hgail.git
 source activate rllab3
 cd hgail
 python setup.py develop
