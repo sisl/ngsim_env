@@ -8,7 +8,7 @@
 ![dependecies](docs/ngsim_env_Dependencies.png)
 
 # Installation Process
-Install instructions are at [`docs/install_env_gail_full.md`](docs/install_env_gail_full.md)
+Step-by-step install instructions are at [`docs/install_env_gail_full.md`](docs/install_env_gail_full.md)
 
 # Train and run a single agent GAIL policy: 
 0. Navigate to ngsim_env/scripts/imitation
