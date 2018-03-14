@@ -1,7 +1,5 @@
-# Installing Blake's ngsim_env and gail
-- These are the install instructions along with logfiles for [ngsim_env](https://github.com/wulfebw/ngsim_env) followed by gail 
-- ngsim section adapted from Blake's ngsim install [instructions](https://github.com/wulfebw/ngsim_env/blob/master/docs/install.md) then added to by Raunak on Jan 26
-- Hgail adapted from Derek's install instructions and then added to by Raunak on Jan 25
+# Installing ngsim_env and gail
+- These are the install instructions for the environment which is called ngsim_env followed by generative adversarial imitation learning called hgail
 
 # Installation instructions for ngsim_env 
 ```bash
