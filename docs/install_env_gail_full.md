@@ -18,7 +18,9 @@ cd rllab
 # this takes a while
 conda env create -f environment.yml
 conda env update
-# activate the conda environment
+# If hdf5 is not installed, install it as it is required by AutoEnvs later in the process
+conda install hdf5
+# activate the rllab environment
 source activate rllab3
 python setup.py develop
 cd ..
