@@ -18,7 +18,7 @@ urls = [
     "https://github.com/sisl/AutoViz.jl.git",
     "https://github.com/sisl/BayesNets.jl.git",
     "https://github.com/sisl/NGSIM.jl.git",
-    "https://github.com/wulfebw/AutoRisk.jl.git",
+    "https://github.com/sisl/AutoRisk.jl.git",
 ]
 
 packages = keys(Pkg.installed())
