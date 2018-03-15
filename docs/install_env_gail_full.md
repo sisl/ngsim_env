@@ -78,7 +78,16 @@ python
 julia
   >> using PyPlot
   >>using AutoEnvs
-  >>quit()
+  # If this AutoEnvs step errors saying problems with HDF5, just do what it suggests
+  >> Pkg.build("HDF5")
+  # If the above errors, do what is says i.e. sudo apt-get install hdf5-tools
+  >> quit()
+sudo apt-get install hdf5-tools
+  # If it doesn't work immediately, I got an error saying extra trailing apt, restart the terminal and try again
+  # Now let's go back to Julia and try using AutoEnvs again
+julia
+  >> using AutoEnvs
+  >> quit()
 ```
 Next, we will get the NGSIM data and run a few tests with julia and python to make sure everything is fine
 
