@@ -115,8 +115,8 @@ cd ../../..
 ### run python tests
 ```bash
 # install the python components of the package
-source activate rllab3 # this is probably not necessary, but just in case
-cd ngsim_env/python
+source activate rllab3
+cd ngsim_env/python # this is assuming you have ngsim_env on your home directory. If not, navigate to where you have ngsim_env
 python setup.py develop
 pip install julia
 cd tests
