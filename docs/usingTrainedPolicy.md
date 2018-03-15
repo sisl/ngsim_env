@@ -38,5 +38,5 @@ jupyter notebook
 ```
 - the visualize family of ipynb's have headers at the top of each file describing what it does.
   - visualize.ipynb is for extracting the Root Mean Square Error
-  - visualize_trajectories.ipynb creates videos such as the one shown below in the demo section
+  - visualize_trajectories.ipynb creates videos such as the one shown in the demo section
   - visualize_emergent.ipynb calculates the emergent metrics such as offroad duration and collision rate
