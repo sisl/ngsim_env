@@ -33,8 +33,8 @@ Now, the resulting trajectories have been generated. Next step, visualize the re
 # Staying the same directory i.e. ngsim_env/scripts/imitation
 jupyter notebook
 
-# The above will open up a jupyter notebook in your browser showing all the files in the current directory. The .ipynb
-# files are helpful for visualization as described below
+# The above will open up a jupyter notebook in your browser showing all the files in the current directory. 
+# The .ipynb files are helpful for visualization as described below
 ```
 - the visualize family of ipynb's have headers at the top of each file describing what it does.
   - visualize.ipynb is for extracting the Root Mean Square Error
