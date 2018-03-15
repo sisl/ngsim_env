@@ -27,3 +27,10 @@ cd ~/ngsim_env/scripts/imitation
 # Can change n_proc to determine how many cores you want to use
 python validate.py --n_proc 1 --exp_dir ../../data/experiments/random_model_name/ --params_filename itr_200.npz --random_seed 42
 ```
+Now, the resulting trajectories have been generated. Next step, visualize the results. 
+
+Open up a jupyter notebook and use the visualize*.ipynb files.
+  - the visualize family of ipynb's have headers at the top of each file describing what it does.
+    - visualize.ipynb is for extracting the Root Mean Square Error
+    - visualize_trajectories.ipynb creates videos such as the one shown below in the demo section
+    - visualize_emergent.ipynb calculates the emergent metrics such as offroad duration and collision rate
