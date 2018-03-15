@@ -29,8 +29,14 @@ python validate.py --n_proc 1 --exp_dir ../../data/experiments/random_model_name
 ```
 Now, the resulting trajectories have been generated. Next step, visualize the results. 
 
-Open up a jupyter notebook and use the visualize*.ipynb files.
-  - the visualize family of ipynb's have headers at the top of each file describing what it does.
-    - visualize.ipynb is for extracting the Root Mean Square Error
-    - visualize_trajectories.ipynb creates videos such as the one shown below in the demo section
-    - visualize_emergent.ipynb calculates the emergent metrics such as offroad duration and collision rate
+```bash
+# Staying the same directory i.e. ngsim_env/scripts/imitation
+jupyter notebook
+
+# The above will open up a jupyter notebook in your browser showing all the files in the current directory. The .ipynb
+files are helpful for visualization as described below
+```
+- the visualize family of ipynb's have headers at the top of each file describing what it does.
+  - visualize.ipynb is for extracting the Root Mean Square Error
+  - visualize_trajectories.ipynb creates videos such as the one shown below in the demo section
+  - visualize_emergent.ipynb calculates the emergent metrics such as offroad duration and collision rate
