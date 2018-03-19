@@ -23,6 +23,9 @@ cd data/experiments/random_model_name/imitate/log/
 # Now we go for using the trained policy to drive a car
 cd ~/ngsim_env/scripts/imitation
 
+# Activate rllab
+source activate rllab
+
 # Drive a car using the policy
 # Can change n_proc to determine how many cores you want to use
 python validate.py --n_proc 1 --exp_dir ../../data/experiments/random_model_name/ --params_filename itr_200.npz --random_seed 42
