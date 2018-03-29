@@ -14,7 +14,7 @@ python imitate.py --exp_name singleagent_def_2 --env_multiagent False --use_info
 
 python imitate.py --exp_name singleagent_def_3 --env_multiagent False --use_infogail False --policy_recurrent True --n_itr 1000 --n_envs 50 --validator_render False  --batch_size 10000 --gradient_penalty 2 --discount .95 --recurrent_hidden_dim 64 &
 
-FAIL = 0
+FAIL=0
 for job in `jobs -p`
 do
 	wait $job || let "FAIL+=1"
@@ -38,7 +38,7 @@ python imitate.py --exp_name singleagent_def_2_fine --env_multiagent False --use
 
 python imitate.py --exp_name singleagent_def_3_fine --env_multiagent False --use_infogail False --policy_recurrent True --n_itr 200 --n_envs 100 --validator_render False  --batch_size 40000 --gradient_penalty 2 --discount .99 --recurrent_hidden_dim 64 --params_filepath ../../data/experiments/singleagent_def_3/imitate/log/itr_1000.npz &
 
-FAIL = 0
+FAIL=0
 for job in `jobs -p`
 do
 	wait $job || let "FAIL+=1"
