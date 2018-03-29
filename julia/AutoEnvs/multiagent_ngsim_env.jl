@@ -235,7 +235,7 @@ end
 function _extract_rewards(env::MultiagentNGSIMEnv, infos::Dict{String, Array{Float64}})
     rewards = zeros(env.n_veh)
     for i in 1:env.n_veh
-        if infos["is_colliding"] == 1
+        if infos["is_colliding"][i] == 1
             rewards[i] = -1
         end
     end
