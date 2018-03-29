@@ -156,7 +156,7 @@ function _step!(env::NGSIMEnv, action::Array{Float64})
     update!(env.rec, env.scene)
 
     # compute info about the step
-    step_infos = Dict()
+    step_infos = Dict{String, Float64}()
     step_infos["rmse_pos"] = sqrt(abs2((orig_veh.state.posG - env.ego_veh.state.posG)))
     step_infos["rmse_vel"] = sqrt(abs2((orig_veh.state.v - env.ego_veh.state.v)))
     step_infos["rmse_t"] = sqrt(abs2((orig_veh.state.posF.t - env.ego_veh.state.posF.t)))
@@ -166,6 +166,15 @@ function _step!(env::NGSIMEnv, action::Array{Float64})
     step_infos["phi"] = env.ego_veh.state.posF.ϕ
     return step_infos
 end
+
+function _extract_rewards(env::NGSIMEnv, infos::Dict{String, Float64})
+    if infos["is_colliding"] == 1
+        return -1
+    else
+        return 0
+    end
+end
+
 function Base.step(env::NGSIMEnv, action::Array{Float64})
     step_infos = _step!(env, action)
     # compute features and feature_infos 
@@ -185,13 +194,14 @@ function Base.step(env::NGSIMEnv, action::Array{Float64})
     else
         terminal = false
     end
-    return features, 0, terminal, infos
+    reward = _extract_rewards(env, infos)
+    return features, reward, terminal, infos
 end
 function _compute_feature_infos(env::NGSIMEnv, features::Array{Float64})
     is_colliding = features[env.infos_cache["is_colliding_idx"]]
     markerdist_left = features[env.infos_cache["markerdist_left_idx"]]
     markerdist_right = features[env.infos_cache["markerdist_right_idx"]]
-    return Dict(
+    return Dict{String, Float64}(
         "is_colliding"=>is_colliding, 
         "markerdist_left"=>markerdist_left,
         "markerdist_right"=>markerdist_right

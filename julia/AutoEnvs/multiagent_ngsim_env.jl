@@ -231,6 +231,17 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
     
     return step_infos
 end
+
+function _extract_rewards(env::MultiagentNGSIMEnv, infos::Dict{String, Array{Float64}})
+    rewards = zeros(env.n_veh)
+    for i in 1:env.n_veh
+        if infos["is_colliding"] == 1
+            rewards[i] = -1
+        end
+    end
+    return rewards
+end
+
 function Base.step(env::MultiagentNGSIMEnv, action::Array{Float64})
     step_infos = _step!(env, action)
     # compute features and feature_infos 
@@ -247,7 +258,8 @@ function Base.step(env::MultiagentNGSIMEnv, action::Array{Float64})
     # but expects the environment to handle resetting, so do that here
     # note: this mutates env.features in order to return the correct obs when resetting
     reset(env, terminal)
-    return deepcopy(env.features), zeros(env.n_veh), terminal, infos
+	rewards = _extract_rewards(env, infos)
+    return deepcopy(env.features), rewards, terminal, infos
 end
 function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64})
     feature_infos = Dict{String, Array{Float64}}("is_colliding"=>Float64[])
