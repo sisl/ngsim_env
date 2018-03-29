@@ -274,9 +274,9 @@ def build_baseline(args, env):
 
 def build_reward_handler(args, writer=None):
     reward_handler = hgail.misc.utils.RewardHandler(
-        use_env_rewards=False,
+        use_env_rewards=args.reward_handler_use_env_rewards,
         max_epochs=args.reward_handler_max_epochs, # epoch at which final scales are used
-        critic_final_scale=1.,
+        critic_final_scale=args.reward_handler_critic_final_scale,
         recognition_initial_scale=0.,
         recognition_final_scale=args.reward_handler_recognition_final_scale,
         summary_writer=writer,

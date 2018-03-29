@@ -30,6 +30,8 @@ def parse_args(arglist=None):
     # reward handler
     parser.add_argument('--reward_handler_max_epochs', type=int, default=100)
     parser.add_argument('--reward_handler_recognition_final_scale', type=float, default=.2)
+    parser.add_argument('--reward_handler_use_env_rewards', type=str2bool, default=False)
+    parser.add_argument('--reward_handler_critic_final_scale', type=float, default=1.)
 
     # policy 
     parser.add_argument('--use_infogail', type=str2bool, default=True)
