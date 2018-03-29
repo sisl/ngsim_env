@@ -49,9 +49,9 @@ echo $FAIL
 # VALIDATE - creates the validation trajectories - simulates the model on each road section
 for model in 1_fine 2_fine 3_fine; #run 2 at a time
 do
-    python validate.py --n_proc 20 --exp_dir ../../data/experiments/multiagent_curr_$model/ --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs $i &
+    python validate.py --n_proc 20 --exp_dir ../../data/experiments/multiagent_curr_$model/ --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs 100 &
 
-    python validate.py --n_proc 20 --exp_dir ../../data/experiments/singleagent_def_$model/ --params_filename itr_200.npz --use_multiagent True --random_seed 3  --n_envs $i &
+    python validate.py --n_proc 20 --exp_dir ../../data/experiments/singleagent_def_$model/ --params_filename itr_200.npz --use_multiagent True --random_seed 3  --n_envs 100 &
 
     for job in `jobs -p`
     do
