@@ -55,6 +55,10 @@ source ~/.bashrc
 # manually add AutoEnvs
 echo "push!(LOAD_PATH, \"$(pwd)/ngsim_env/julia/AutoEnvs\")" >> ~/.juliarc.jl
 
+# Revert to a previous version of Vec.jl
+cd ~/.julia/v0.6/Vec
+git checkout v0.1.0
+
 # enter a julia interpreter
 julia
   # set python path (replace with your miniconda3 install location)
