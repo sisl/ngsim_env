@@ -70,7 +70,7 @@ if __name__ == '__main__':
         args.n_envs_start,
         args.n_envs_end,
         args.n_envs_step,
-        args.reward_handler_use_env_rewards
+        use_env_rewards=args.reward_handler_use_env_rewards
     )
 
     # run commands

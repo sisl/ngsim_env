@@ -19,13 +19,14 @@ done
 echo $FAIL
 
 # Now, FINE TUNE
-for model in 1_fine 2_fine 3_fine; 
+for num in 1 2 3; 
 do
+    model=${num}_fine
     python imitate.py --exp_name multiagent_rails_col_$model --env_multiagent True \
         --use_infogail False --policy_recurrent True --n_itr 200 --n_envs 100 \
         --validator_render False  --batch_size 40000 --gradient_penalty 2 \
         --discount .99 --recurrent_hidden_dim 64 \
-        --params_filepath ../../data/experiments/multiagent_${model}_50/imitate/log/itr_200.npz \
+        --params_filepath ../../data/experiments/multiagent_rails_col_${num}_50/imitate/log/itr_200.npz \
         --reward_handler_use_env_rewards True &
 done
 
