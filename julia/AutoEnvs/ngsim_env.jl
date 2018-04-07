@@ -168,11 +168,14 @@ function _step!(env::NGSIMEnv, action::Array{Float64})
 end
 
 function _extract_rewards(env::NGSIMEnv, infos::Dict{String, Float64})
+    r = 0
     if infos["is_colliding"] == 1
-        return -1
-    else
-        return 0
+        r -= 1
     end
+    if infos["is_offroad"] == 1
+        r -= 1
+    end
+    return r
 end
 
 function Base.step(env::NGSIMEnv, action::Array{Float64})
@@ -201,10 +204,12 @@ function _compute_feature_infos(env::NGSIMEnv, features::Array{Float64})
     is_colliding = features[env.infos_cache["is_colliding_idx"]]
     markerdist_left = features[env.infos_cache["markerdist_left_idx"]]
     markerdist_right = features[env.infos_cache["markerdist_right_idx"]]
+    is_offroad = features[env.infos_cache["out_of_lane_idx"]]
     return Dict{String, Float64}(
         "is_colliding"=>is_colliding, 
         "markerdist_left"=>markerdist_left,
-        "markerdist_right"=>markerdist_right
+        "markerdist_right"=>markerdist_right,
+        "is_offroad"=>is_offroad
     )
 end
 function AutoRisk.get_features(env::NGSIMEnv)
