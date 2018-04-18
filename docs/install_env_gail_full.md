@@ -183,6 +183,9 @@ julia
 cd ~/ngsim_env/scripts
 
 julia extract_ngsim_demonstrations.jl
+#code references both ngsim.h5 and ngsim_all.h5, so make a copy?
+cd ../data/trajectories
+cp ngsim_all.h5 ngsim.h5
 ```
 Congratulations!! You have completed the installation process. Navigate back to main [readme](https://github.com/sisl/ngsim_env/blob/master/README.md)
 page and look at the 'Train and run a single agent GAIL policy:' section to train a policy
