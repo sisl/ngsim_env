@@ -49,13 +49,7 @@ function test_sample_multiple_trajdata_vehicle_simple()
         3=>Dict("ts"=>1, "te"=>100),
     )]
     offset = 50
-    raised = false
-    try
-        traj_idx, vehids, ts, te = sample_multiple_trajdata_vehicle(4, trajinfos, offset, verbose = false)
-    catch
-        raised = true
-    end
-    @test raised
+    @test_throws ErrorException sample_multiple_trajdata_vehicle(4, trajinfos, offset, verbose = false)
 
 end
 
