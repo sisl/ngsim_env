@@ -59,6 +59,10 @@ echo "push!(LOAD_PATH, \"$(pwd)/ngsim_env/julia/AutoEnvs\")" >> ~/.juliarc.jl
 cd ~/.julia/v0.6/Vec
 git checkout v0.1.0
 
+# Revert  AutomotiveDrivingModels to commit before update for Vec.jl
+cd ~/.julia/v0.6/AutomotiveDrivingModels
+git checkout 74050e9ae44bda72a485c2573ac4f0df2bc3e767
+
 # enter a julia interpreter
 julia
   # set python path (replace with your miniconda3 install location)
