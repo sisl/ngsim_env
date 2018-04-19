@@ -308,9 +308,75 @@ Args:
 Returns:
     - img: returns a (height, width, channel) image to display
 =#
+#function render(
+#        env::MultiagentNGSIMEnv; 
+#        egocolor::Vector{Float64}=[0.,0.,1.],
+#        camtype::String="follow",
+#        static_camera_pos::Vector{Float64}=[0.,0.],
+#        camera_rotation::Float64=0.,
+#        canvas_height::Int=800,
+#        canvas_width::Int=800)
+#    # define colors for all the vehicles
+#    println("Default version of render")
+#    carcolors = Dict{Int,Colorant}()
+#    egocolor = ColorTypes.RGB(egocolor...)
+#    for veh in env.scene
+#        carcolors[veh.id] = in(veh.id, env.egoids) ? egocolor : colorant"green"
+#    end
+#
+#    # define a camera following the ego vehicle
+#    if camtype == "follow"
+#        # follow the first vehicle in the scene
+#        cam = AutoViz.CarFollowCamera{Int}(env.egoids[1], env.render_params["zoom"])
+#    elseif camtype == "static"
+#        cam = AutoViz.StaticCamera(VecE2(static_camera_pos...), env.render_params["zoom"])
+#    else
+#        error("invalid camera type $(camtype)")
+#    end
+#    stats = [
+#        CarFollowingStatsOverlay(env.egoids[1], 2), 
+#        NeighborsOverlay(env.egoids[1], textparams = TextParams(x = 600, y_start=300))
+#    ]
+#
+#    # rendermodel for optional rotation
+#    # note that for this to work, you have to comment out a line in AutoViz
+#    # src/overlays.jl:27 `clear_setup!(rendermodel)` in render
+#    rendermodel = RenderModel()
+#    camera_rotate!(rendermodel, deg2rad(camera_rotation))
+#
+#    # render the frame
+#    frame = render(
+#        env.scene, 
+#        env.roadway,
+#        stats, 
+#        rendermodel = rendermodel,
+#        cam = cam, 
+#        car_colors = carcolors,
+#        canvas_height=canvas_height,
+#        canvas_width=canvas_width
+#    )
+#
+#    # save the frame 
+#    if !isdir(env.render_params["viz_dir"])
+#        mkdir(env.render_params["viz_dir"])
+#    end
+#    ep_dir = joinpath(env.render_params["viz_dir"], "episode_$(env.epid)")
+#    if !isdir(ep_dir)
+#        mkdir(ep_dir)
+#    end
+#    filepath = joinpath(ep_dir, "step_$(env.t).png")
+#    write_to_png(frame, filepath)
+#
+#    # load and return the frame as an rgb array
+#    img = PyPlot.imread(filepath)
+#    return img
+#end
+#
+
 function render(
-        env::MultiagentNGSIMEnv; 
-        egocolor::Vector{Float64}=[1.,0.,0.],
+        env::MultiagentNGSIMEnv;
+	infos=Dict(),
+        egocolor::Vector{Float64}=[0.,0.,1.],
         camtype::String="follow",
         static_camera_pos::Vector{Float64}=[0.,0.],
         camera_rotation::Float64=0.,
@@ -319,6 +385,13 @@ function render(
     # define colors for all the vehicles
     carcolors = Dict{Int,Colorant}()
     egocolor = ColorTypes.RGB(egocolor...)
+    if infos["is_colliding"][1] == 1.0
+    	    egocolor = ColorTypes.RGB([1.,0.,0.]...)
+    end
+
+    if infos["is_offroad"][1] == 1.0
+    	    egocolor = ColorTypes.RGB([1.,1.,0.]...)
+    end
     for veh in env.scene
         carcolors[veh.id] = in(veh.id, env.egoids) ? egocolor : colorant"green"
     end
@@ -370,3 +443,4 @@ function render(
     img = PyPlot.imread(filepath)
     return img
 end
+
