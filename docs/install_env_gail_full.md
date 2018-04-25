@@ -59,6 +59,10 @@ echo "push!(LOAD_PATH, \"$(pwd)/ngsim_env/julia/AutoEnvs\")" >> ~/.juliarc.jl
 cd ~/.julia/v0.6/Vec
 git checkout v0.1.0
 
+# Revert  AutomotiveDrivingModels to commit before update for Vec.jl
+cd ~/.julia/v0.6/AutomotiveDrivingModels
+git checkout 74050e9ae44bda72a485c2573ac4f0df2bc3e767
+
 # enter a julia interpreter
 julia
   # set python path (replace with your miniconda3 install location)
@@ -179,6 +183,9 @@ julia
 cd ~/ngsim_env/scripts
 
 julia extract_ngsim_demonstrations.jl
+#code references both ngsim.h5 and ngsim_all.h5, so make a copy?
+cd ../data/trajectories
+cp ngsim_all.h5 ngsim.h5
 ```
 Congratulations!! You have completed the installation process. Navigate back to main [readme](https://github.com/sisl/ngsim_env/blob/master/README.md)
 page and look at the 'Train and run a single agent GAIL policy:' section to train a policy
