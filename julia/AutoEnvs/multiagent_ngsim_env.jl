@@ -234,12 +234,15 @@ end
 
 function _extract_rewards(env::MultiagentNGSIMEnv, infos::Dict{String, Array{Float64}})
     rewards = zeros(env.n_veh)
+    R = 2000
+    
     for i in 1:env.n_veh
         if infos["is_colliding"][i] == 1
-            rewards[i] -= 2000
-        end 
-        if infos["is_offroad"][i] == 1
-            rewards[i] -= 2000
+            rewards[i] -= R
+        elseif infos["is_offroad"][i] == 1
+            rewards[i] -= R
+        elseif infos["hard_brake"][i] == 1
+            rewards[i] -= (R*0.5) # braking hard is not as bad as a collision
         end
     end
     return rewards
@@ -264,11 +267,17 @@ function Base.step(env::MultiagentNGSIMEnv, action::Array{Float64})
 	rewards = _extract_rewards(env, infos)
     return deepcopy(env.features), rewards, terminal, infos
 end
-function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64})
-    feature_infos = Dict{String, Array{Float64}}("is_colliding"=>Float64[], "is_offroad"=>Float64[])
+function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64};
+                                                         accel_thresh::Float64=-3.0)
+    feature_infos = Dict{String, Array{Float64}}(
+                "is_colliding"=>Float64[], 
+                "is_offroad"=>Float64[],
+                "hard_brake"=>Float64[])
     for i in 1:env.n_veh
         is_colliding = features[i, env.infos_cache["is_colliding_idx"]]
         is_offroad = features[i, env.infos_cache["out_of_lane_idx"]]
+        accel = features[i, env.infos_cache["accel_idx"]]
+        push!(feature_infos["hard_brake"], accel <= accel_thresh)
         push!(feature_infos["is_colliding"], is_colliding)
         push!(feature_infos["is_offroad"], is_offroad)
     end
