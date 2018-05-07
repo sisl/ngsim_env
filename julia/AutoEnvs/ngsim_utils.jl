@@ -321,6 +321,9 @@ function fill_infos_cache(ext::MultiFeatureExtractor)
         if "markerdist_right" == n
             cache["markerdist_right_idx"] = i
         end
+        if "accel" == n
+            cache["accel_idx"] = i
+        end
     end
     return cache
 end
