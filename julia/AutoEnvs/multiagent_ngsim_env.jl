@@ -176,11 +176,10 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
     # make sure number of actions passed in equals number of vehicles
     @assert size(action, 1) == env.n_veh
     ego_states = Vector{VehicleState}(env.n_veh)
-
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
         # convert action into form 
-        ego_action = AccelTurnrate(action[i,:]...)
+	ego_action = AccelTurnrate(action[i,:]...)
         # propagate the ego vehicle 
         ego_states[i] = propagate(
             ego_veh, 
@@ -198,18 +197,48 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
         keep_vehicle_subset!(env.scene, env.egoids)
     end
     orig_vehs = Vector{Vehicle}(env.n_veh)
+
     for (i, egoid) in enumerate(env.egoids)
-        vehidx = findfirst(env.scene, egoid)
+	vehidx = findfirst(env.scene, egoid)
+
         # track the original vehicle for validation / infos purposes
         orig_vehs[i] = env.scene[vehidx]
-        # replace the original with the controlled vehicle
+
+	# replace the original with the controlled vehicle
+
         env.scene[vehidx] = env.ego_vehs[i]
+	lane4print = env.ego_vehs[i].state.posF.roadind.tag.lane
+	println("Lane number = $lane4print")
+	# Raunak's failed attempt at Ghost vehicle. The below treats both original
+	# and policy driven as real cars and ends up showing the both to be colliding
+	#push!(env.scene,env.ego_vehs[i])	
+
     end
 
     # update rec with current scene 
     update!(env.rec, env.scene)
 
     # compute info about the step
+#    step_infos = Dict{String, Vector{Float64}}(
+#        "rmse_pos"=>Float64[],
+#        "rmse_vel"=>Float64[],
+#        "rmse_t"=>Float64[],
+#        "x"=>Float64[],
+#        "y"=>Float64[],
+#        "s"=>Float64[],
+#        "phi"=>Float64[],
+#    )
+#    for i in 1:env.n_veh
+#        push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
+#        push!(step_infos["rmse_vel"], sqrt(abs2((orig_vehs[i].state.v - env.ego_vehs[i].state.v))))
+#        push!(step_infos["rmse_t"], sqrt(abs2((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t))))
+#        push!(step_infos["x"], env.ego_vehs[i].state.posG.x)
+#        push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
+#        push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
+#        push!(step_infos["phi"], env.ego_vehs[i].state.posF.ϕ)
+#    end
+
+    # Raunak adds in original vehicle properties
     step_infos = Dict{String, Vector{Float64}}(
         "rmse_pos"=>Float64[],
         "rmse_vel"=>Float64[],
@@ -218,6 +247,11 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
         "y"=>Float64[],
         "s"=>Float64[],
         "phi"=>Float64[],
+	"orig_x"=>Float64[],
+	"orig_y"=> Float64[],
+	"orig_theta"=>Float64[],
+	"orig_length"=>Float64[],
+	"orig_width"=>Float64[]
     )
     for i in 1:env.n_veh
         push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
@@ -227,8 +261,13 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
         push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
         push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
         push!(step_infos["phi"], env.ego_vehs[i].state.posF.ϕ)
+	push!(step_infos["orig_x"], orig_vehs[i].state.posG.x)
+	push!(step_infos["orig_y"], orig_vehs[i].state.posG.y)
+	push!(step_infos["orig_theta"], orig_vehs[i].state.posG.θ)
+	push!(step_infos["orig_length"], orig_vehs[i].def.length)
+	push!(step_infos["orig_width"], orig_vehs[i].def.width)
     end
-    
+
     return step_infos
 end
 
@@ -247,13 +286,17 @@ end
 
 function Base.step(env::MultiagentNGSIMEnv, action::Array{Float64})
     step_infos = _step!(env, action)
+    
     # compute features and feature_infos 
     features = get_features(env)
     feature_infos = _compute_feature_infos(env, features)
+    
     # combine infos 
     infos = merge(step_infos, feature_infos)
+    
     # update env timestep to be the next scene to load
     env.t += 1
+    
     # compute terminal
     terminal = env.t > env.h ? true : false
     terminal = [terminal for _ in 1:env.n_veh]
@@ -264,6 +307,8 @@ function Base.step(env::MultiagentNGSIMEnv, action::Array{Float64})
 	rewards = _extract_rewards(env, infos)
     return deepcopy(env.features), rewards, terminal, infos
 end
+
+
 function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64})
     feature_infos = Dict{String, Array{Float64}}("is_colliding"=>Float64[], "is_offroad"=>Float64[])
     for i in 1:env.n_veh
@@ -274,6 +319,8 @@ function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64
     end
     return feature_infos
 end
+
+
 function AutoRisk.get_features(env::MultiagentNGSIMEnv)
     for (i, egoid) in enumerate(env.egoids)
         veh_idx = findfirst(env.scene, egoid)
@@ -282,6 +329,8 @@ function AutoRisk.get_features(env::MultiagentNGSIMEnv)
     end
     return deepcopy(env.features)
 end
+
+
 function observation_space_spec(env::MultiagentNGSIMEnv)
     low = zeros(length(env.ext))
     high = zeros(length(env.ext))
@@ -373,6 +422,7 @@ Returns:
 #end
 #
 
+# Raunak defined this render function to enable color changing based on collisions and offroads
 function render(
         env::MultiagentNGSIMEnv;
 	infos=Dict(),
@@ -405,10 +455,20 @@ function render(
     else
         error("invalid camera type $(camtype)")
     end
-    stats = [
-        CarFollowingStatsOverlay(env.egoids[1], 2), 
-        NeighborsOverlay(env.egoids[1], textparams = TextParams(x = 600, y_start=300))
+    
+    # Raunak commented this out because it was creating rays that were being used for
+    # some research that Tim had been doing
+    #stats = [
+    #    CarFollowingStatsOverlay(env.egoids[1], 2), 
+    #    NeighborsOverlay(env.egoids[1], textparams = TextParams(x = 600, y_start=300))
+    #]
+
+    # Raunak video plotting the ghost vehicle
+    overlays = [
+        CarFollowingStatsOverlay(env.egoids[1], 2)
+	,OrigVehicleOverlay(infos["orig_x"][1],infos["orig_y"][1],infos["orig_theta"][1],infos["orig_length"][1],infos["orig_width"][1])
     ]
+
 
     # rendermodel for optional rotation
     # note that for this to work, you have to comment out a line in AutoViz
@@ -420,7 +480,7 @@ function render(
     frame = render(
         env.scene, 
         env.roadway,
-        stats, 
+        overlays, 
         rendermodel = rendermodel,
         cam = cam, 
         car_colors = carcolors,
@@ -444,3 +504,36 @@ function render(
     return img
 end
 
+# Raunak trying to add the original vehicle as a ghost car in the video
+# Erroring out when defined here. Worked fine when defined within AutoViz/src/2d/Overlays.jl
+# which is the same location where CarFollowingStatsOverlay is defined
+#mutable struct OrigVehicleOverlay <: SceneOverlay
+	# structure attributes here
+#	x::Float64
+#	y::Float64
+#	theta::Float64
+#	length::Float64
+#	width::Float64
+#	color::Colorant
+
+	# constructor function
+
+#	function OrigVehicleOverlay(x::Float64,y::Float64,theta::Float64,length::Float64,
+#				    width::Float64,color::Colorant=colorant"white")
+#	new(x,y,theta,length,width,color)
+#	end
+#end
+
+# Better have this function signature exactly same as CarFollowingStatsOverlay
+#function render!(rendermodel::RenderModel,overlay::OrigVehicleOverlay,scene::Scene, roadway::Roadway)
+#	verbose = true
+#	if verbose
+#		println("render! within OrigVehicleOverlay reporting here")
+#		x=overlay.x 
+#		y=overlay.y
+#		println("x=$x,y = $y")
+#	end
+#   add_instruction!(rendermodel, render_vehicle, (overlay.x, overlay.y, overlay.theta, 
+#						   overlay.length, overlay.width, overlay.color))
+#    return rendermodel
+#end
