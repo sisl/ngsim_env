@@ -338,14 +338,23 @@ if __name__ == '__main__':
     else:
         collect_fn = parallel_collect_trajectories
 
+    # Raunak commented this out since i80 trajectories not required for validation
+#    filenames = [
+#        "trajdata_i101_trajectories-0750am-0805am.txt",
+#        "trajdata_i101_trajectories-0805am-0820am.txt",
+#        "trajdata_i101_trajectories-0820am-0835am.txt",
+#        "trajdata_i80_trajectories-0400-0415.txt",
+#        "trajdata_i80_trajectories-0500-0515.txt",
+#        "trajdata_i80_trajectories-0515-0530.txt"
+#    ]
+
     filenames = [
         "trajdata_i101_trajectories-0750am-0805am.txt",
         "trajdata_i101_trajectories-0805am-0820am.txt",
-        "trajdata_i101_trajectories-0820am-0835am.txt",
-        "trajdata_i80_trajectories-0400-0415.txt",
-        "trajdata_i80_trajectories-0500-0515.txt",
-        "trajdata_i80_trajectories-0515-0530.txt"
+        "trajdata_i101_trajectories-0820am-0835am.txt"
     ]
+ 
+
     if run_args.n_envs:
         args.n_envs = run_args.n_envs
     sys.stdout.write('{} vehicles with H = {}'.format(args.n_envs, args.env_H))

@@ -207,12 +207,15 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
 	# replace the original with the controlled vehicle
 
         env.scene[vehidx] = env.ego_vehs[i]
-	lane4print = env.ego_vehs[i].state.posF.roadind.tag.lane
-	println("Lane number = $lane4print")
+
+	# Raunak testing how to access lane id
+	# Commented out for now as not relevant to reward augmentation
+	# lane4print = env.ego_vehs[i].state.posF.roadind.tag.lane
+	# println("Lane number = $lane4print")
+
 	# Raunak's failed attempt at Ghost vehicle. The below treats both original
 	# and policy driven as real cars and ends up showing the both to be colliding
-	#push!(env.scene,env.ego_vehs[i])	
-
+	#push!(env.scene,env.ego_vehs[i])
     end
 
     # update rec with current scene 
