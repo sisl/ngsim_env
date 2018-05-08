@@ -16,7 +16,7 @@ for num in 1 2 3 # policy number
 do
     python multiagent_curriculum_training.py --exp_name multiagent_rails_${REWARD}_${num}_{} \
         --reward_handler_use_env_rewards True &
-    echo "Curriculum policy # ${num}, job id $(`echo $!`), time $(`echo date`)" >> $LOG_FILE
+    echo "Curriculum policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
 
 FAIL=0
@@ -39,7 +39,7 @@ do
         --discount .99 --recurrent_hidden_dim 64 \
         --params_filepath ../../data/experiments/${model}_50/imitate/log/itr_200.npz \
         --reward_handler_use_env_rewards True &
-    echo "Fine tune policy # ${num}, job id $(`echo $!`), time $(`echo date`)" >> $LOG_FILE
+    echo "Fine tune policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
 
 FAIL=0
@@ -60,7 +60,7 @@ do
     python validate.py --n_proc 20 --exp_dir ../../data/experiments/${model}/ \
         --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs 100 &
 
-    echo "Validate policy # ${num}, job id $(`echo $!`), time $(`echo date`)" >> $LOG_FILE
+    echo "Validate policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
     for job in `jobs -p`
     do
         echo "Validate job id: $job, failed: $FAIL", time: $(`echo date`) >> $LOG_FILE
