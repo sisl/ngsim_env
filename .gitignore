@@ -145,3 +145,6 @@ CTestTestfile.cmake
 # sublime
 *.sublime-*
 
+# experiment logs, but keep folder
+scripts/imitation/logs/*
+*.swp

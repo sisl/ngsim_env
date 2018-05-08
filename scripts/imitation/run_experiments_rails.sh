@@ -5,7 +5,9 @@
 # RAILS - specify reward augmentation in ngsim_env/julia/AutoEnvs/muliagent_ngsim_env.py, 
 #                                        function _extract_rewards()
 # REWARD is something like 4000, or could be more involved like col_off_2000_1000
-REWARD=4000
+REWARD=1000
+
+LOG_FILE="logs/experiment_rails_${REWARD}.log"
 
 start=`date +%s`
 
@@ -14,15 +16,17 @@ for num in 1 2 3 # policy number
 do
     python multiagent_curriculum_training.py --exp_name multiagent_rails_${REWARD}_${num}_{} \
         --reward_handler_use_env_rewards True &
+    echo "Curriculum policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
 
 FAIL=0
 for job in `jobs -p`
 do
 	wait $job || let "FAIL+=1"
+    echo "Curriculum job id: $job, failed: $FAIL" >> $LOG_FILE
 done
 
-echo "Curriculum - Failed : " $FAIL
+echo "Curriculum - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 end_curr=`date +%s`
 
 # Now, FINE TUNE
@@ -35,15 +39,17 @@ do
         --discount .99 --recurrent_hidden_dim 64 \
         --params_filepath ../../data/experiments/${model}_50/imitate/log/itr_200.npz \
         --reward_handler_use_env_rewards True &
+    echo "Fine tune policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
 
 FAIL=0
 for job in `jobs -p`
 do
 	wait $job || let "FAIL+=1"
+    echo "Fine tune job id: $job, failed: $FAIL" >> $LOG_FILE
 done
 
-echo "Fine Tune - Failed : " $FAIL
+echo "Fine Tune - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 end_fine=`date +%s`
 
 # VALIDATE - creates the validation trajectories - simulates the model on each road section
@@ -54,13 +60,14 @@ do
     python validate.py --n_proc 20 --exp_dir ../../data/experiments/${model}/ \
         --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs 100 &
 
+    echo "Validate policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
     for job in `jobs -p`
     do
-        echo $job
+        echo "Validate job id: $job, failed: $FAIL", time: $(`echo date`) >> $LOG_FILE
         wait $job || let "FAIL+=1"
     done
 done
-echo "Validate - Failed : " $FAIL
+echo "Validate - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 
 #Now that validation is done, there will be .npz trajectory files for each of the experiments
 # These should appear in ../../data/experiments/{model_name}/imiate/validation/
@@ -74,9 +81,9 @@ runtime_curr=$((end_curr-start))
 runtime_fine=$((end_fine-end_curr))
 runtime_validate=$((end-end_fine))
 
-echo "Total, curriculum, fine, validate times: "
-echo $runtime
-echo $runtime_curr
-echo $runtime_fine
-echo $runtime_validate
+echo "Total, curriculum, fine, validate times: " >> $LOG_FILE
+echo $runtime >> $LOG_FILE
+echo $runtime_curr >> $LOG_FILE
+echo $runtime_fine >> $LOG_FILE
+echo $runtime_validate >> $LOG_FILE
 
