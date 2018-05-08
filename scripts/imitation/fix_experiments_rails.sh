@@ -7,35 +7,34 @@
 # REWARD is something like 4000, or could be more involved like col_off_2000_1000
 REWARD=3000
 
+LOG_FILE="logs/fix_experiment_rails_${REWARD}.log"
+
 start=`date +%s`
 
-EMPTY_ARR=()
+MODELS_TO_FIX_FOR_CURRICULUM=(2)
+MODELS_TO_FIX_FOR_FINETUNE=(1)
+MODELS_TO_FIX_FOR_VALIDATE=()
 
 # First, CURRICULUM TRAINING
-MODELS_TO_FIX_FOR_CURRICULUM=(2)
 for num in "${MODELS_TO_FIX_FOR_CURRICULUM[@]}" # policy number
-#echo "skipped curriculum"
-#for num in "${EMPTY_ARR[@]}" # dont do this loop 
 do
-    echo "here"
     python multiagent_curriculum_training.py --exp_name multiagent_rails_${REWARD}_${num}_{} \
         --reward_handler_use_env_rewards True &
+    echo "Curriculum policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
 
 FAIL=0
 for job in `jobs -p`
 do
 	wait $job || let "FAIL+=1"
+    echo "Curriculum job id: $job, failed: $FAIL" >> $LOG_FILE
 done
 
-echo "Failed : " $FAIL
+echo "Curriculum - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 end_curr=`date +%s`
 
 # Now, FINE TUNE
-MODELS_TO_FIX_FOR_FINETUNE=(1)
-for num in "${MODELS_TO_FIX_FOR_FINETUNE[@]}" # policy number
-#echo "skipped fine tune"
-#for num in "${EMPTY_ARR[@]}" # dont do this loop 
+for num in "${MODELS_TO_FIX_FOR_FINETUNE[@]}"; 
 do
     model=multiagent_rails_${REWARD}_$num
     python imitate.py --exp_name ${model}_fine --env_multiagent True \
@@ -44,36 +43,35 @@ do
         --discount .99 --recurrent_hidden_dim 64 \
         --params_filepath ../../data/experiments/${model}_50/imitate/log/itr_200.npz \
         --reward_handler_use_env_rewards True &
+    echo "Fine tune policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
 
 FAIL=0
 for job in `jobs -p`
 do
 	wait $job || let "FAIL+=1"
+    echo "Fine tune job id: $job, failed: $FAIL" >> $LOG_FILE
 done
 
-echo "Failed : " $FAIL
+echo "Fine Tune - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 end_fine=`date +%s`
 
 # VALIDATE - creates the validation trajectories - simulates the model on each road section
-# Does one at a time because already heavily parallelized
-#FAIL=0
-#for num in "${MODELS_TO_FIX[@]}" # policy number
-#echo "skipped validate"
-#for num in "${EMPTY_ARR[@]}" # dont do this loop 
-#do
-#    model=multiagent_rails_${REWARD}_${num}_fine
-#    echo $model
-#    python validate.py --n_proc 6 --exp_dir ../../data/experiments/${model}/ \
-#        --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs 100 &
-#
-#    for job in `jobs -p`
-#    do
-#        echo $job
-#        wait $job || let "FAIL+=1"
-#    done
-#done
-#echo "Failed : " $FAIL
+FAIL=0
+for num in "${MODELS_TO_FIX_FOR_VALIDATE[@]}"; 
+do
+    model=multiagent_rails_${REWARD}_${num}_fine
+    python validate.py --n_proc 20 --exp_dir ../../data/experiments/${model}/ \
+        --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs 100 &
+
+    echo "Validate policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
+    for job in `jobs -p`
+    do
+        echo "Validate job id: $job, failed: $FAIL", time: $(`echo date`) >> $LOG_FILE
+        wait $job || let "FAIL+=1"
+    done
+done
+echo "Validate - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 
 #Now that validation is done, there will be .npz trajectory files for each of the experiments
 # These should appear in ../../data/experiments/{model_name}/imiate/validation/
@@ -85,11 +83,11 @@ end=`date +%s`
 runtime=$((end-start))
 runtime_curr=$((end_curr-start))
 runtime_fine=$((end_fine-end_curr))
-#runtime_validate=$((end-end_fine))
+runtime_validate=$((end-end_fine))
 
-echo "Total, curriculum, fine, validate times: "
-echo $runtime
-echo $runtime_curr
-echo $runtime_fine
-#echo $runtime_validate
+echo "Total, curriculum, fine, validate times: " >> $LOG_FILE
+echo $runtime >> $LOG_FILE
+echo $runtime_curr >> $LOG_FILE
+echo $runtime_fine >> $LOG_FILE
+echo $runtime_validate >> $LOG_FILE
 
