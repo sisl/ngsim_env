@@ -2,19 +2,22 @@
 # They can all be run in parallel. After they are done, we will generate the validation trajectories.
 # There is also the fine tuning step in between.
 
+BASE_NAME="rails_smoothed_off_brake"
+
 # RAILS - specify reward augmentation in ngsim_env/julia/AutoEnvs/muliagent_ngsim_env.py, 
 #                                        function _extract_rewards()
 # REWARD is something like 4000, or could be more involved like col_off_2000_1000
-REWARD=1000
+REWARD=2000
+# TODO don't forget to change it in the file!!
 
-LOG_FILE="logs/experiment_rails_${REWARD}.log"
+LOG_FILE="logs/${BASE_NAME}_${REWARD}.log"
 
 start=`date +%s`
 
 # First, CURRICULUM TRAINING
 for num in 1 2 3 # policy number
 do
-    python multiagent_curriculum_training.py --exp_name multiagent_rails_${REWARD}_${num}_{} \
+    python multiagent_curriculum_training.py --exp_name ${BASE_NAME}_${REWARD}_${num}_{} \
         --reward_handler_use_env_rewards True &
     echo "Curriculum policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
@@ -32,7 +35,7 @@ end_curr=`date +%s`
 # Now, FINE TUNE
 for num in 1 2 3; 
 do
-    model=multiagent_rails_${REWARD}_$num
+    model=${BASE_NAME}_${REWARD}_$num
     python imitate.py --exp_name ${model}_fine --env_multiagent True \
         --use_infogail False --policy_recurrent True --n_itr 200 --n_envs 100 \
         --validator_render False  --batch_size 40000 --gradient_penalty 2 \
@@ -56,7 +59,7 @@ end_fine=`date +%s`
 FAIL=0
 for num in 1 2 3; 
 do
-    model=multiagent_rails_${REWARD}_${num}_fine
+    model=${BASE_NAME}_${REWARD}_${num}_fine
     python validate.py --n_proc 20 --exp_dir ../../data/experiments/${model}/ \
         --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs 100 &
 
