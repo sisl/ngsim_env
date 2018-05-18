@@ -188,7 +188,7 @@ def parallel_collect_trajectories(
     [res.get() for res in results]
     pool.close()
     # let the julia processes finish up
-    time.sleep(5)
+    time.sleep(10)
     return trajlist
 
 def single_process_collect_trajectories(
