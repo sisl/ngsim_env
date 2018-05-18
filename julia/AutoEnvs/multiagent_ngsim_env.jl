@@ -276,7 +276,7 @@ end
 
 function _extract_rewards(env::MultiagentNGSIMEnv, infos::Dict{String, Array{Float64}})
     rewards = zeros(env.n_veh)
-    R = 1000
+    R = 2000
     
     for i in 1:env.n_veh
         reward_col = infos["is_colliding"][i] * R
@@ -312,14 +312,16 @@ function Base.step(env::MultiagentNGSIMEnv, action::Array{Float64})
 end
 
 function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64};
-                                accel_thresh_min::Float64=-2.0, accel_thresh::Float64=-3.0)
+                                accel_thresh_min::Float64=-2.0, accel_thresh::Float64=-3.0,
+                                min_d_edge_thresh::Float64=0.5, offroad_thresh::Float64 = -0.1)
     feature_infos = Dict{String, Array{Float64}}(
                 "is_colliding"=>Float64[], 
                 "is_offroad"=>Float64[],
                 "hard_brake"=>Float64[])
     for i in 1:env.n_veh
         is_colliding = features[i, env.infos_cache["is_colliding_idx"]]
-        is_offroad = features[i, env.infos_cache["out_of_lane_idx"]]
+        push!(feature_infos["is_colliding"], is_colliding)
+        
         accel = features[i, env.infos_cache["accel_idx"]]
         if accel <= accel_thresh_min
             if accel <= accel_thresh
@@ -331,7 +333,16 @@ function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64
         else
             push!(feature_infos["hard_brake"], 0)
         end
-        push!(feature_infos["is_colliding"], is_colliding)
+        
+        is_offroad = features[i, env.infos_cache["out_of_lane_idx"]]
+        if is_offroad < 1
+            d_left = features[i, env.infos_cache["distance_road_edge_left_idx"]]
+            d_right = features[i, env.infos_cache["distance_road_edge_right_idx"]]
+            closest_d = min(d_left, d_right)
+            if closest_d <= min_d_edge_thresh # meaning too close
+                is_offroad = abs((closest_d - min_d_edge_thresh) / (offroad_thresh - min_d_edge_thresh))
+            end
+        end
         push!(feature_infos["is_offroad"], is_offroad)
     end
     return feature_infos

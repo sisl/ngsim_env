@@ -324,6 +324,13 @@ function fill_infos_cache(ext::MultiFeatureExtractor)
         if "accel" == n
             cache["accel_idx"] = i
         end
+        if "distance_road_edge_right" == n
+            cache["distance_road_edge_right_idx"] = i
+        end
+        if "distance_road_edge_left" == n
+            cache["distance_road_edge_left_idx"] = i
+        end
+
     end
     return cache
 end
