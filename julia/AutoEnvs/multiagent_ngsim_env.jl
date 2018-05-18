@@ -276,16 +276,13 @@ end
 
 function _extract_rewards(env::MultiagentNGSIMEnv, infos::Dict{String, Array{Float64}})
     rewards = zeros(env.n_veh)
-    R = 2000
+    R = 1000
     
     for i in 1:env.n_veh
-        if infos["is_colliding"][i] == 1
-            rewards[i] -= R
-        elseif infos["is_offroad"][i] == 1
-            rewards[i] -= R
-        elseif infos["hard_brake"][i] == 1
-            rewards[i] -= (R*0.5) # braking hard is not as bad as a collision
-        end
+        reward_col = infos["is_colliding"][i] * R
+        reward_off = infos["is_offroad"][i] * R
+        reward_brake = infos["hard_brake"][i] * R * 0.5  # braking hard is not as bad as a collision
+        rewards[i] -= max(reward_col, reward_off, reward_brake) 
     end
     return rewards
 end
@@ -315,7 +312,7 @@ function Base.step(env::MultiagentNGSIMEnv, action::Array{Float64})
 end
 
 function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64};
-                                                         accel_thresh::Float64=-3.0)
+                                accel_thresh_min::Float64=-2.0, accel_thresh::Float64=-3.0)
     feature_infos = Dict{String, Array{Float64}}(
                 "is_colliding"=>Float64[], 
                 "is_offroad"=>Float64[],
@@ -324,7 +321,16 @@ function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64
         is_colliding = features[i, env.infos_cache["is_colliding_idx"]]
         is_offroad = features[i, env.infos_cache["out_of_lane_idx"]]
         accel = features[i, env.infos_cache["accel_idx"]]
-        push!(feature_infos["hard_brake"], accel <= accel_thresh)
+        if accel <= accel_thresh_min
+            if accel <= accel_thresh
+                push!(feature_infos["hard_brake"], 1)
+            else
+                # linearly increase penalty
+                push!(feature_infos["hard_brake"], abs((accel - accel_thresh_min) / (accel_thresh - accel_thresh_min)))
+            end
+        else
+            push!(feature_infos["hard_brake"], 0)
+        end
         push!(feature_infos["is_colliding"], is_colliding)
         push!(feature_infos["is_offroad"], is_offroad)
     end
