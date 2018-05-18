@@ -66,8 +66,8 @@ do
     echo "Validate policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
     for job in `jobs -p`
     do
-        echo "Validate job id: $job, failed: $FAIL", time: $(`echo date`) >> $LOG_FILE
         wait $job || let "FAIL+=1"
+        echo "Validate job id: $job, failed: $FAIL", time: $(`echo date`) >> $LOG_FILE
     done
 done
 echo "Validate - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
