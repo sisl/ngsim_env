@@ -26,11 +26,12 @@ def parse_args(arglist=None):
     parser.add_argument('--env_primesteps', type=int, default=50)
     parser.add_argument('--env_action_repeat', type=int, default=1)
     parser.add_argument('--env_multiagent', type=str2bool, default=False)
+    parser.add_argument('--env_reward', type=int, default=0)
 
     # reward handler
     parser.add_argument('--reward_handler_max_epochs', type=int, default=100)
     parser.add_argument('--reward_handler_recognition_final_scale', type=float, default=.2)
-    parser.add_argument('--reward_handler_use_env_rewards', type=str2bool, default=False)
+    parser.add_argument('--reward_handler_use_env_rewards', type=str2bool, default=True)
     parser.add_argument('--reward_handler_critic_final_scale', type=float, default=1.)
 
     # policy 

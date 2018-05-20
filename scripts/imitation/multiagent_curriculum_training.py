@@ -10,7 +10,7 @@ def build_commands(
         n_envs_end,
         n_envs_step,
         exp_dir='../../data/experiments',
-        use_env_rewards=False):
+        env_reward=0):
     # template command to be completed for each individual run
     # (this syntax creates a single string, used for interpretable formatting)
     template = ('python imitate.py '
@@ -22,7 +22,7 @@ def build_commands(
         '--n_envs {} '
         '--params_filepath {} '
         '--validator_render False ' # avoid bug where render takes a very long time
-        '--reward_handler_use_env_rewards {}'
+        '--env_reward {}'
     )
     cmds = []
     # explicit empty string for initial run
@@ -34,7 +34,7 @@ def build_commands(
             n_itr_each, 
             n_envs,
             params_filepath,
-            use_env_rewards
+            env_reward
         )
         cmds.append(cmd)
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_envs_start', type=int, default=10)
     parser.add_argument('--n_envs_end', type=int, default=50)
     parser.add_argument('--n_envs_step', type=int, default=10)
-    parser.add_argument('--reward_handler_use_env_rewards', type=str, default='False')
+    parser.add_argument('--env_reward', type=int, default=0)
     parser.add_argument('--dry_run', action='store_true', default=False)
     args = parser.parse_args()
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         args.n_envs_start,
         args.n_envs_end,
         args.n_envs_step,
-        use_env_rewards=args.reward_handler_use_env_rewards
+        env_reward=args.env_reward
     )
 
     # run commands

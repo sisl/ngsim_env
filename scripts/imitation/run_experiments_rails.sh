@@ -18,7 +18,7 @@ start=`date +%s`
 for num in 1 2 3 # policy number
 do
     python multiagent_curriculum_training.py --exp_name ${BASE_NAME}_${REWARD}_${num}_{} \
-        --reward_handler_use_env_rewards True &
+        --env_reward $REWARD &
     echo "Curriculum policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
 
@@ -41,7 +41,7 @@ do
         --validator_render False  --batch_size 40000 --gradient_penalty 2 \
         --discount .99 --recurrent_hidden_dim 64 \
         --params_filepath ../../data/experiments/${model}_50/imitate/log/itr_200.npz \
-        --reward_handler_use_env_rewards True &
+        --env_reward $REWARD &
     echo "Fine tune policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
 done
 

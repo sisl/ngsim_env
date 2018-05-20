@@ -136,7 +136,8 @@ def build_ngsim_env(
         render_params=render_params,
         n_envs=args.n_envs,
         n_veh=args.n_envs,
-        remove_ngsim_veh=args.remove_ngsim_veh
+        remove_ngsim_veh=args.remove_ngsim_veh,
+        reward=args.env_reward
     )
     # order matters here because multiagent is a subset of vectorized
     # i.e., if you want to run with multiagent = true, then vectorize must 

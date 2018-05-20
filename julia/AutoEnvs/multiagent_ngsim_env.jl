@@ -33,6 +33,7 @@ type MultiagentNGSIMEnv <: Env
     n_veh::Int # number of simultaneous agents
     remove_ngsim_veh::Bool # whether to remove ngsim veh from all scenes
     features::Array{Float64}
+    reward::Int # reward / penalty to use in reward augmentation
 
     # metadata
     epid::Int # episode id
@@ -49,6 +50,7 @@ type MultiagentNGSIMEnv <: Env
             H::Int = 50,
             n_veh::Int = 20,
             remove_ngsim_veh::Bool = false,
+            reward::Int = 0,
             render_params::Dict = Dict("zoom"=>5., "viz_dir"=>"/tmp"))
         param_keys = keys(params)
         @assert in("trajectory_filepaths", param_keys)
@@ -59,6 +61,7 @@ type MultiagentNGSIMEnv <: Env
         H = get(params, "H", H)
         n_veh = get(params, "n_veh", n_veh)
         remove_ngsim_veh = get(params, "remove_ngsim_veh", remove_ngsim_veh)
+        reward = get(params, "reward", reward)
         for (k,v) in get(params, "render_params", render_params)
             render_params[k] = v
         end
@@ -92,7 +95,7 @@ type MultiagentNGSIMEnv <: Env
             rec, 
             ext, 
             egoids, ego_vehs, 0, 0, 0, H, primesteps, Δt, 
-            n_veh, remove_ngsim_veh, features,
+            n_veh, remove_ngsim_veh, features, reward,
             0, render_params, infos_cache
         )
     end
@@ -251,13 +254,11 @@ end
 
 function _extract_rewards(env::MultiagentNGSIMEnv, infos::Dict{String, Array{Float64}})
     rewards = zeros(env.n_veh)
-    R = 2000
-    
     for i in 1:env.n_veh
-        reward_col = infos["is_colliding"][i] * R
-        reward_off = infos["is_offroad"][i] * R
-        reward_brake = infos["hard_brake"][i] * R * 0.5  # braking hard is not as bad as a collision
-        rewards[i] -= max(reward_col, reward_off, reward_brake) 
+        reward_col = infos["is_colliding"][i] * env.reward
+        reward_off = infos["is_offroad"][i] * env.reward
+        reward_brake = infos["hard_brake"][i] * env.reward * 0.5  # braking hard is not as bad as a collision
+        rewards[i] = -max(reward_col, reward_off, reward_brake) 
     end
     return rewards
 end
