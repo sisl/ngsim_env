@@ -9,7 +9,7 @@ REWARD=2000
 # TODO don't forget to change it in the file!!
 
 BASE_NAME="rails_smoothed_off_brake"
-LOG_FILE="logs/${BASE_NAME}_${REWARD}.log"
+LOG_FILE="logs/fix_${BASE_NAME}_${REWARD}.log"
 
 start=`date +%s`
 
