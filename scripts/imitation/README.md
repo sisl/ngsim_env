@@ -45,3 +45,13 @@ multiagent_curriculum_training.py
 
 run_n_agents_vs_perf_tests.sh
  * This bash script runs a combination of validate.py (doing a multiagent and singleagent in parallel, 20 processes each) and visualize.py, generating rmse_[attr]_[nagents].png files (in this directory). 
+
+
+### Troubleshooting
+#### Not necessarily a fully fleshed out guide at the moment, more of just keeping track of issues we encounter.
+Running validate.py occasionally hangs with no error messages or anything like that. 
+Previous experience suggests that this is somehow related to julia processes remaining unfinished and the python
+script moving on. Looking in validate.py, there is a sleep() call. In the past we have had some limited success in 
+overcoming the hanging problem by increasing the sleep duration. However, it is not guaranteed.
+We have been unable to produce a minimum reproducible example of this happening, but the thoughts are that it is
+related to the machine's load. A higher load means we need to wait longer.
