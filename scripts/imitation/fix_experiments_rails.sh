@@ -5,7 +5,7 @@
 # RAILS - specify reward augmentation in ngsim_env/julia/AutoEnvs/muliagent_ngsim_env.py, 
 #                                        function _extract_rewards()
 # REWARD is something like 4000, or could be more involved like col_off_2000_1000
-REWARD=2000
+REWARD=4000
 # TODO don't forget to change it in the file!!
 
 BASE_NAME="rails_smoothed_off_brake"
@@ -13,16 +13,22 @@ LOG_FILE="logs/fix_${BASE_NAME}_${REWARD}.log"
 
 start=`date +%s`
 
-MODELS_TO_FIX_FOR_CURRICULUM=(3)
-MODELS_TO_FIX_FOR_FINETUNE=(3)
-MODELS_TO_FIX_FOR_VALIDATE=(1 2 3)
+MODELS_TO_FIX_FOR_CURRICULUM=('1' '2')
+PARAMS_FOR_CURRICULUM=('30' '10')       # default is ''
+N_ENV_START_FOR_C=('40' '20')           # default is 10
+                                        # these are useful when fails partway through curriculum
+MODELS_TO_FIX_FOR_FINETUNE=('1' '2')
+MODELS_TO_FIX_FOR_VALIDATE=('1' '2' '3')
 
-# First, CURRICULUM TRAINING
+# First, CURRICULUM TRAiINING
+i=0
 for num in "${MODELS_TO_FIX_FOR_CURRICULUM[@]}" # policy number
 do
     python multiagent_curriculum_training.py --exp_name ${BASE_NAME}_${REWARD}_${num}_{} \
-        --env_reward $REWARD &
+        --env_reward $REWARD --load_params_init ${PARAMS_FOR_CURRICULUM[i]} \
+        --n_envs_start ${N_ENV_START_FOR_C[i]} &
     echo "Curriculum policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
+    let "i++"
 done
 
 FAIL=0

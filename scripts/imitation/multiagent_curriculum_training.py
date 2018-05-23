@@ -10,7 +10,8 @@ def build_commands(
         n_envs_end,
         n_envs_step,
         exp_dir='../../data/experiments',
-        env_reward=0):
+        env_reward=0,
+        load_from=''):
     # template command to be completed for each individual run
     # (this syntax creates a single string, used for interpretable formatting)
     template = ('python imitate.py '
@@ -26,7 +27,13 @@ def build_commands(
     )
     cmds = []
     # explicit empty string for initial run
-    params_filepath = "''" 
+    params_filepath = "''"
+    if load_from is not '':
+        params_filepath = os.path.join(
+            exp_dir,
+            exp_name.format(load_from),
+            'imitate/log/itr_{}.npz'.format(n_itr_each)
+        )
     for n_envs in range(n_envs_start, n_envs_end + n_envs_step, n_envs_step):
         # each command differs only in the experiment name and the params_filepath
         cmd = template.format(
@@ -61,6 +68,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_envs_step', type=int, default=10)
     parser.add_argument('--env_reward', type=int, default=0)
     parser.add_argument('--dry_run', action='store_true', default=False)
+    parser.add_argument('--load_params_init', type=str, default='') # if not empty, inserted into first parampath
     args = parser.parse_args()
 
     # build commands
@@ -70,7 +78,8 @@ if __name__ == '__main__':
         args.n_envs_start,
         args.n_envs_end,
         args.n_envs_step,
-        env_reward=args.env_reward
+        env_reward=args.env_reward,
+        load_from=args.load_params_init
     )
 
     # run commands
