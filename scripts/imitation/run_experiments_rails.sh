@@ -2,24 +2,33 @@
 # They can all be run in parallel. After they are done, we will generate the validation trajectories.
 # There is also the fine tuning step in between.
 
-BASE_NAME="rails_smoothed_off_brake"
-
 # RAILS - specify reward augmentation in ngsim_env/julia/AutoEnvs/muliagent_ngsim_env.py, 
 #                                        function _extract_rewards()
 # REWARD is something like 4000, or could be more involved like col_off_2000_1000
-REWARD=2000
+REWARD=1000
 # TODO don't forget to change it in the file!!
 
-LOG_FILE="logs/${BASE_NAME}_${REWARD}.log"
+BASE_NAME="rails_smoothed_off_brake"
+LOG_FILE="logs/fix_${BASE_NAME}_${REWARD}.log"
 
 start=`date +%s`
 
-# First, CURRICULUM TRAINING
-for num in 1 2 3 # policy number
+MODELS_TO_FIX_FOR_CURRICULUM=('1' '2' '3')
+PARAMS_FOR_CURRICULUM=('10' '20' '20')      # default is '', last completed training
+N_ENVS_PER='10'                             # shouldn't need to change this
+                                            # these are useful when fails partway through curriculum
+MODELS_TO_FIX_FOR_FINETUNE=('1' '2' '3')
+MODELS_TO_FIX_FOR_VALIDATE=('1' '2' '3')
+
+# First, CURRICULUM TRAiINING
+i=0
+for num in "${MODELS_TO_FIX_FOR_CURRICULUM[@]}" # policy number
 do
     python multiagent_curriculum_training.py --exp_name ${BASE_NAME}_${REWARD}_${num}_{} \
-        --env_reward $REWARD &
+        --env_reward $REWARD --load_params_init ${PARAMS_FOR_CURRICULUM[i]} \
+        --n_envs_start $((PARAMS_FOR_CURRICULUM[i]+$N_ENVS_PER)) &
     echo "Curriculum policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
+    let "i++"
 done
 
 FAIL=0
@@ -33,7 +42,7 @@ echo "Curriculum - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 end_curr=`date +%s`
 
 # Now, FINE TUNE
-for num in 1 2 3; 
+for num in "${MODELS_TO_FIX_FOR_FINETUNE[@]}"; 
 do
     model=${BASE_NAME}_${REWARD}_$num
     python imitate.py --exp_name ${model}_fine --env_multiagent True \
@@ -57,10 +66,10 @@ end_fine=`date +%s`
 
 # VALIDATE - creates the validation trajectories - simulates the model on each road section
 FAIL=0
-for num in 1 2 3; 
+for num in "${MODELS_TO_FIX_FOR_VALIDATE[@]}"; 
 do
     model=${BASE_NAME}_${REWARD}_${num}_fine
-    python validate.py --n_proc 20 --exp_dir ../../data/experiments/${model}/ \
+    python validate.py --n_proc 1 --debug True --exp_dir ../../data/experiments/${model}/ \
         --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs 100 &
 
     echo "Validate policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
