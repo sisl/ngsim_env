@@ -113,12 +113,14 @@ def add_kwargs_to_reset(env):
 
 '''end of hack, back to our regularly scheduled programming'''
 
+# Raunak adding an input argument for multiagent video making
 def build_ngsim_env(
-        args, 
+        args,
         exp_dir='/tmp', 
         alpha=0.001,
         vectorize=False,
-        render_params=None):
+        render_params=None,
+        videoMaking=False):
     basedir = os.path.expanduser('~/.julia/v0.6/NGSIM/data')
     filepaths = [os.path.join(basedir, args.ngsim_filename)]
     if render_params is None:
@@ -142,8 +144,12 @@ def build_ngsim_env(
     # order matters here because multiagent is a subset of vectorized
     # i.e., if you want to run with multiagent = true, then vectorize must 
     # also be true
+
     if args.env_multiagent:
         env_id = 'MultiagentNGSIMEnv'
+        if videoMaking:
+            print('RAUNAK BHATTACHARRYA VIDEO MAKER IS ON')
+            env_id='MultiagentNGSIMEnvVideoMaker'
         alpha = alpha * args.n_envs
         normalize_wrapper = vectorized_normalized_env
     elif vectorize:
