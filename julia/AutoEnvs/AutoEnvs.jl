@@ -19,4 +19,5 @@ include("ngsim_utils.jl")
 include("ngsim_env.jl")
 include("vectorized_ngsim_env.jl")
 include("multiagent_ngsim_env.jl")
+include("multiagent_ngsim_env_videomaker.jl")
 end
