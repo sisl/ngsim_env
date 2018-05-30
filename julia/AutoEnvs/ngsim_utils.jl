@@ -287,6 +287,7 @@ end
 
 function build_feature_extractor(params = Dict())
     subexts::Vector{AbstractFeatureExtractor} = []
+    push!(subexts,LaneIDFeatureExtractor())
     push!(subexts, CoreFeatureExtractor())
     push!(subexts, TemporalFeatureExtractor())
     push!(subexts, WellBehavedFeatureExtractor())

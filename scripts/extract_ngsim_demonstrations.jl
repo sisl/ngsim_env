@@ -7,6 +7,7 @@ using NGSIM
 
 function build_feature_extractor()
     subexts = [
+	LaneIDFeatureExtractor(),	# May 2018: Added by Raunak when lane id added feature
         CoreFeatureExtractor(),
         TemporalFeatureExtractor(),
         WellBehavedFeatureExtractor(),
@@ -172,7 +173,7 @@ end
 
 
 # NGSIM
-extract_ngsim_features(output_filename="ngsim_all.h5", n_expert_files=6)
+extract_ngsim_features(output_filename="ngsim_addLaneID.h5", n_expert_files=6)
 
 # DEBUG
 # trajdata_filepath = "/Users/wulfebw/.julia/v0.5/NGSIM/data/2_simple.txt"
