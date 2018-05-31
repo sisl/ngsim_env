@@ -15,7 +15,7 @@ def parse_args(arglist=None):
     # logistics
     parser.add_argument('--exp_name', type=str, default='NGSIM-gail')
     parser.add_argument('--params_filepath', type=str, default='')
-    parser.add_argument('--expert_filepath', type=str, default='../../data/trajectories/ngsim.h5')
+    parser.add_argument('--expert_filepath', type=str, default='../../data/trajectories/ngsim_addLaneID.h5')
     parser.add_argument('--vectorize', type=str2bool, default=True)
     parser.add_argument('--n_envs', type=int, default=50)
     parser.add_argument('--normalize_clip_std_multiple', type=float, default=10.)
