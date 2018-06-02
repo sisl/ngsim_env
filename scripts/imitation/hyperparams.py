@@ -12,6 +12,20 @@ from utils import str2bool
 
 def parse_args(arglist=None):
     parser = argparse.ArgumentParser()
+   
+    # decaying reward logistics
+    parser.add_argument('--decay_reward', type=str2bool, default=False)
+    parser.add_argument('--exp_dir', type=str, default='../../data/experiments')
+    parser.add_argument('--itrs_per_decay', type=int, default=25)
+
+    # curriculum params
+    parser.add_argument('--do_curriculum', type=str2bool, default=False)
+    parser.add_argument('--n_envs_start', type=int, default=10)
+    parser.add_argument('--n_envs_end', type=int, default=50)
+    parser.add_argument('--n_envs_step', type=int, default=10)
+    parser.add_argument('--load_params_init', type=str, default='NONE') 
+    # if not the string 'NONE', inserted into first parampath for curriculum
+
     # logistics
     parser.add_argument('--exp_name', type=str, default='NGSIM-gail')
     parser.add_argument('--params_filepath', type=str, default='')
