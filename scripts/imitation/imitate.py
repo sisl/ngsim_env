@@ -21,10 +21,15 @@ def do_curriculum(args):
     # initial params filepath to allow continuation mid curriculum training
     if args.load_params_init != 'NONE':
         print("starting at:", args.load_params_init)
+        load_exp_name = base_exp_name + "_" + args.load_params_init
+        itr_npz = n_itr_each
+        if args.decay_reward:
+            load_exp_name += "_" + str(n_itr_each - args.itrs_per_decay)
+            itr_npz = args.itrs_per_decay
         args.params_filepath = os.path.join(
-            exp_dir,
-            base_exp_name + load_from,
-            'imitate/log/itr_{}.npz'.format(n_itr_each)
+            args.exp_dir,
+            load_exp_name,
+            'imitate/log/itr_{}.npz'.format(itr_npz)
         )
         print("Full path:", args.params_filepath)
 
