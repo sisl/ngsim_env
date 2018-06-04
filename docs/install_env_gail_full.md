@@ -57,6 +57,7 @@ echo "push!(LOAD_PATH, \"$(pwd)/ngsim_env/julia/AutoEnvs\")" >> ~/.juliarc.jl
 
 # Revert to a previous version of Vec.jl
 cd ~/.julia/v0.6/Vec
+git fetch --tags
 git checkout v0.1.0
 
 # Revert  AutomotiveDrivingModels to commit before update for Vec.jl
