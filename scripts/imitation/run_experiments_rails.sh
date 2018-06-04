@@ -9,15 +9,22 @@ REWARD=4000
 # TODO don't forget to change it in the file!!
 
 BASE_NAME="decay_rails_smoothed"
-LOG_FILE="logs/${BASE_NAME}_${REWARD}.log"
 
 NUM_ITRS=200
 DECAY=True
-ITRS_PER_DECAY=25
+ITRS_PER_DECAY=50
+if [ $DECAY ]; then
+    BASE_NAME="${ITRS_PER_DECAY}_${BASE_NAME}"
+    echo $BASE_NAME
+fi
+
+LOG_FILE="logs/${BASE_NAME}_${REWARD}.log"
+
 start=`date +%s`
 
 MODELS_FOR_CURRICULUM=('1' '2' '3')
 PARAMS_FOR_CURRICULUM=('NONE' 'NONE' 'NONE')                # default is 'NONE', last completed training
+
 N_ENVS_PER=10                               # shouldn't need to change this
 END_CURRICULUM=50                           # End curriculum training with this many envs
                                             # these are useful when fails partway through curriculum
