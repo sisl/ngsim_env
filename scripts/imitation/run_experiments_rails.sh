@@ -5,16 +5,16 @@
 # RAILS - specify reward augmentation in ngsim_env/julia/AutoEnvs/muliagent_ngsim_env.py, 
 #                                        function _extract_rewards()
 # REWARD is something like 4000, or could be more involved like col_off_2000_1000
-REWARD=4000
+REWARD=2000
 # TODO don't forget to change it in the file!!
 
-BASE_NAME="decay_rails_smoothed"
+BASE_NAME="rails_smoothed"
 
 NUM_ITRS=200
 DECAY=True
-ITRS_PER_DECAY=50
+ITRS_PER_DECAY=100
 if [ $DECAY ]; then
-    BASE_NAME="${ITRS_PER_DECAY}_${BASE_NAME}"
+    BASE_NAME="${ITRS_PER_DECAY}_decay_${BASE_NAME}"
     echo $BASE_NAME
 fi
 
