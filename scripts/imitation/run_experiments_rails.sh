@@ -86,7 +86,7 @@ FAIL=0
 for num in "${MODELS_FOR_VALIDATE[@]}"; 
 do
     model=${BASE_NAME}_${REWARD}_${num}_fine_${LAST_DECAY_ITR}
-    python validate.py --n_proc 1 --debug True --exp_dir ../../data/experiments/${model}/ \
+    python validate.py --n_proc 7 --exp_dir ../../data/experiments/${model}/ \
         --params_filename itr_${ITRS_PER_DECAY}.npz --use_multiagent True --random_seed 3 --n_envs 100 &
 
     echo "Validate policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
