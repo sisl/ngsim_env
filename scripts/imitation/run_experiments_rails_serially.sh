@@ -1,7 +1,7 @@
 # Raunak making a serial version of run_experiments_rails.sh to avoid the 
 # memory error problem when running locally
 
-BASE_NAME="laneidtest"
+BASE_NAME="continuous_laneid"
 
 # RAILS - specify reward augmentation in ngsim_env/julia/AutoEnvs/muliagent_ngsim_env.py, 
 #                                        function _extract_rewards()
@@ -14,7 +14,7 @@ LOG_FILE="logs/${BASE_NAME}_${REWARD}.log"
 start=`date +%s`
 
 # First, CURRICULUM TRAINING
-for num in 2; # policy number
+for num in 1; # policy number
 do
     python multiagent_curriculum_training.py --exp_name ${BASE_NAME}_${REWARD}_${num}_{} \
         --env_reward $REWARD &
@@ -32,7 +32,7 @@ echo "Curriculum - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 end_curr=`date +%s`
 
 # Now, FINE TUNE
-for num in 2; 
+for num in 1; 
 do
     model=${BASE_NAME}_${REWARD}_$num
     python imitate.py --exp_name ${model}_fine --env_multiagent True \
@@ -56,10 +56,10 @@ end_fine=`date +%s`
 
 # VALIDATE - creates the validation trajectories - simulates the model on each road section
 FAIL=0
-for num in 2; 
+for num in 1; 
 do
     model=${BASE_NAME}_${REWARD}_${num}_fine
-    python validate.py --n_proc 8 --exp_dir ../../data/experiments/${model}/ \
+    python validate.py --n_proc 7 --exp_dir ../../data/experiments/${model}/ \
         --params_filename itr_200.npz --use_multiagent True --random_seed 3 --n_envs 100 &
 
     echo "Validate policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
