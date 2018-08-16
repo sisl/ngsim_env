@@ -1,7 +1,7 @@
 # Raunak making a serial version of run_experiments_rails.sh to avoid the 
 # memory error problem when running locally
 
-BASE_NAME="continuous_laneid"
+BASE_NAME="continuous_normalized_laneid"
 
 # RAILS - specify reward augmentation in ngsim_env/julia/AutoEnvs/muliagent_ngsim_env.py, 
 #                                        function _extract_rewards()

@@ -173,7 +173,7 @@ end
 
 
 # NGSIM
-extract_ngsim_features(output_filename="ngsim_addLaneID_continuous.h5", n_expert_files=6)
+extract_ngsim_features(output_filename="ngsim_laneid_normalized_continuous.h5", n_expert_files=6)
 
 # DEBUG
 # trajdata_filepath = "/Users/wulfebw/.julia/v0.5/NGSIM/data/2_simple.txt"
