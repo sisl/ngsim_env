@@ -26,9 +26,12 @@ import validate
 #-----------------------------------------------------------------------------
 basedir = '../../data/experiments/'
 model_labels = [
-    'rails_smoothed_off_brake_3000_1_fine'
+    'laneidtest_0_2_fine',
+    'continuous_normalized_laneid_0_2_fine'
+#    'continuous_laneid_0_2_fine'
 ]
 itrs = [
+    200,
     200
 ]
 model_params_filepaths = [os.path.join(basedir, label, 'imitate/log/itr_' + str(itrs[i]) + '.npz') 
@@ -172,7 +175,7 @@ def do_it_all_once(model_labels, model_args_filepaths, model_params_filepaths,
     #do this with just 2 models at a time.
     print("creating render map for: ", "; ".join(model_labels))
     render_map = create_render_map(model_labels, model_args_filepaths, model_params_filepaths, multi,rand, n_vehs=n_vehs, remove_ngsim=remove_ngsim)
-    imgs = [np.concatenate((a), 0) for (a) in zip(*[render_map[i] for i in model_labels])]
+    imgs = [np.concatenate((a,b), 0) for (a,b) in zip(*[render_map[i] for i in model_labels])]
     fig, ax = plt.subplots(figsize=(16,16))
     plt.title(name)
     print("\nplotting")
@@ -202,18 +205,21 @@ def do_it_all_once(model_labels, model_args_filepaths, model_params_filepaths,
 #-----------------------------------------------------------------------------
 #			The actual running thing
 #-----------------------------------------------------------------------------
+remove_ngsim_vehicles = False
 for i in range(1):
     print("\Run number: ", i)
-    seed = 2
+    seed = 0
     for j in [1]: #number of models to 'average'
         indx = (j-1)*2
-        name = "-".join(model_labels[indx:indx+1])+'_'+str(i)+"_"+str(seed)
-        do_it_all_once(model_labels[indx:indx+1], 
-                       model_args_filepaths[indx:indx+1], 
-                       model_params_filepaths[indx:indx+1], 
+        name = "-".join(model_labels[indx:indx+2])+'_'+str(i)+"_"+str(seed)
+        if remove_ngsim_vehicles:
+                name = name + '_ngsim_removed'
+        do_it_all_once(model_labels[indx:indx+2], 
+                       model_args_filepaths[indx:indx+2], 
+                       model_params_filepaths[indx:indx+2], 
                        multi=True, 
                        name=name, 
                        single_multi_comp=j, 
                        rand=seed,
-                       n_vehs=100)
+                       n_vehs=100,remove_ngsim=remove_ngsim_vehicles)
         print("\nDone once.\n")
