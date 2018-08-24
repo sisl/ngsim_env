@@ -27,12 +27,13 @@ import validate
 basedir = '../../data/experiments/'
 model_labels = [
     'laneidtest_0_2_fine',
-    'continuous_normalized_laneid_0_2_fine'
+#    'continuous_normalized_laneid_0_2_fine',
+#    'continuous_normalized_laneid_0_3_fine',
 #    'continuous_laneid_0_2_fine'
 ]
 itrs = [
     200,
-    200
+#    200
 ]
 model_params_filepaths = [os.path.join(basedir, label, 'imitate/log/itr_' + str(itrs[i]) + '.npz') 
                           for i,label in enumerate(model_labels)]
@@ -175,7 +176,19 @@ def do_it_all_once(model_labels, model_args_filepaths, model_params_filepaths,
     #do this with just 2 models at a time.
     print("creating render map for: ", "; ".join(model_labels))
     render_map = create_render_map(model_labels, model_args_filepaths, model_params_filepaths, multi,rand, n_vehs=n_vehs, remove_ngsim=remove_ngsim)
-    imgs = [np.concatenate((a,b), 0) for (a,b) in zip(*[render_map[i] for i in model_labels])]
+    
+
+    # Raunak: Choose whether one or two at a time
+    twoAtATime = False
+
+    # Two models at a time
+    if twoAtATime:
+        imgs = [np.concatenate((a,b), 0) for (a,b) in zip(*[render_map[i] for i in model_labels])]
+    else:
+    # One model at a time
+        imgs = [np.concatenate((a), 0) for (a) in zip(*[render_map[i] for i in model_labels])]
+    
+    
     fig, ax = plt.subplots(figsize=(16,16))
     plt.title(name)
     print("\nplotting")
@@ -205,10 +218,10 @@ def do_it_all_once(model_labels, model_args_filepaths, model_params_filepaths,
 #-----------------------------------------------------------------------------
 #			The actual running thing
 #-----------------------------------------------------------------------------
-remove_ngsim_vehicles = False
+remove_ngsim_vehicles = True
 for i in range(1):
     print("\Run number: ", i)
-    seed = 0
+    seed = 2
     for j in [1]: #number of models to 'average'
         indx = (j-1)*2
         name = "-".join(model_labels[indx:indx+2])+'_'+str(i)+"_"+str(seed)

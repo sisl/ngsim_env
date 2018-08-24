@@ -14,7 +14,7 @@ LOG_FILE="logs/${BASE_NAME}_${REWARD}.log"
 start=`date +%s`
 
 # First, CURRICULUM TRAINING
-for num in 1; # policy number
+for num in 3; # policy number
 do
     python multiagent_curriculum_training.py --exp_name ${BASE_NAME}_${REWARD}_${num}_{} \
         --env_reward $REWARD &
@@ -32,7 +32,7 @@ echo "Curriculum - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 end_curr=`date +%s`
 
 # Now, FINE TUNE
-for num in 1; 
+for num in 3; 
 do
     model=${BASE_NAME}_${REWARD}_$num
     python imitate.py --exp_name ${model}_fine --env_multiagent True \
@@ -56,7 +56,7 @@ end_fine=`date +%s`
 
 # VALIDATE - creates the validation trajectories - simulates the model on each road section
 FAIL=0
-for num in 1; 
+for num in 3; 
 do
     model=${BASE_NAME}_${REWARD}_${num}_fine
     python validate.py --n_proc 7 --exp_dir ../../data/experiments/${model}/ \
