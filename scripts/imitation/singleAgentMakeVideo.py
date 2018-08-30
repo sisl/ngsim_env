@@ -44,13 +44,14 @@ multi = True
 #-----------------------------------------------------------------------------
 def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs=dict()):
     x = env.reset(**env_kwargs)
+    print('/n x =',x)
     n_agents = x.shape[0]
     traj = hgail.misc.simulation.Trajectory()
     dones = [True] * n_agents
     policy.reset(dones)
     imgs = []
     for step in range(max_steps):
-        sys.stdout.write('\rstep: {} / {}'.format(step+1, max_steps))
+        #sys.stdout.write('\rstep: {} / {}'.format(step+1, max_steps))
         a, a_info = policy.get_actions(x)
         
         #************************** Raunak tinkering
@@ -117,7 +118,7 @@ def create_render_map(model_labels, model_args_filepaths, model_params_filepaths
         print('\nparams loaded from {}'.format(model_params_filepaths[i]))
         
         # load env and params
-        env, _, _ = utils.build_ngsim_env(args)
+        env, _, _ = utils.build_ngsim_env(args,videoMaking=True)
 
         normalized_env = hgail.misc.utils.extract_normalizing_env(env)
         if normalized_env is not None:
@@ -203,7 +204,7 @@ def do_it_all_once(model_labels, model_args_filepaths, model_params_filepaths,
 #-----------------------------------------------------------------------------
 for i in range(1):
     print("\Run number: ", i)
-    seed = 0
+    seed = 20
     for j in [1]: #number of models to 'average'
         indx = (j-1)*2
         name = "-".join(model_labels[indx:indx+1])+'_'+str(i)+"_"+str(seed)

@@ -26,10 +26,11 @@ import validate
 #-----------------------------------------------------------------------------
 basedir = '../../data/experiments/'
 model_labels = [
-    'laneidtest_0_2_fine',
+#    'laneidtest_0_2_fine',
 #    'continuous_normalized_laneid_0_2_fine',
 #    'continuous_normalized_laneid_0_3_fine',
-#    'continuous_laneid_0_2_fine'
+#    'continuous_laneid_0_2_fine',
+    'discreteLaneID_RAIL_2000_2_fine',
 ]
 itrs = [
     200,
@@ -218,10 +219,10 @@ def do_it_all_once(model_labels, model_args_filepaths, model_params_filepaths,
 #-----------------------------------------------------------------------------
 #			The actual running thing
 #-----------------------------------------------------------------------------
-remove_ngsim_vehicles = True
+remove_ngsim_vehicles = False
 for i in range(1):
     print("\Run number: ", i)
-    seed = 2
+    seed = 8
     for j in [1]: #number of models to 'average'
         indx = (j-1)*2
         name = "-".join(model_labels[indx:indx+2])+'_'+str(i)+"_"+str(seed)

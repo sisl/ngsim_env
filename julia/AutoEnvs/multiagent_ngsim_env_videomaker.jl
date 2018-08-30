@@ -73,6 +73,17 @@ type MultiagentNGSIMEnvVideoMaker <: Env
                 minlength=primesteps + H
             )
         end
+	
+	# Raunak tinkering
+	#println("Constructors says Roadway loaded\n = $roadways")
+	#println("Here are the fields\n $(fieldnames(roadways))")
+	#println("Here is the size $(size(roadways))")
+	#println("roadways[1] = $(roadways[1])")
+#	println("size(roadways[1]) = $(size(roadways[1]))")
+#	println("roadways[1][1] = $(roadways[1][1])")
+
+#	roadways = [gen_straight_roadway(4,1000.)]
+#	println("After gen_straight size = $(size(roadways))")
 
         # build components
         scene_length = max_n_objects(trajdatas)
@@ -158,8 +169,25 @@ function reset(
         vehidx = findfirst(env.scene, egoid)
         env.ego_vehs[i] = env.scene[vehidx]
     end
+    
+    
+    #Raunak tinkering
+    #println("RESET REPORTING \n env.trajidx = $(env.traj_idx)")
+    #println("env.roadways = $(env.roadways)")
+    #println("size(env.roadways)= $(size(env.roadways))")
+
     # set the roadway
     env.roadway = env.roadways[env.traj_idx]
+    
+
+    # Raunak tinkering
+#    env.roadway = gen_straight_roadway(4,1000.)
+    #println("Reset reporting: Here is the roadway \n $(env.roadway)")
+    #println("\n These are the fields \n $(fieldnames(env.roadway))")    
+    
+    
+    
+    
     # env.t is the next timestep to load
     env.t += env.primesteps + 1
     # enforce a maximum horizon 
@@ -216,10 +244,23 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
 	# Commented out for now as not relevant to reward augmentation
 	# lane4print = env.ego_vehs[i].state.posF.roadind.tag.lane
 	# println("Lane number = $lane4print")
-
+	
 	# Raunak's failed attempt at Ghost vehicle. The below treats both original
 	# and policy driven as real cars and ends up showing the both to be colliding
 	#push!(env.scene,env.ego_vehs[i])
+
+	# August 13 2018
+	# Raunak testing out continuous version of lane ID
+	# Normalize the lane offset (t) by lane width
+	#lane_width = DEFAULT_LANE_WIDTH
+	#println("lane width = $lane_width")
+	#discreteComponent = env.ego_vehs[i].state.posF.roadind.tag.lane
+	#continComponent = (env.ego_vehs[i].state.posF.t)/lane_width
+	#println("Discrete component = $discreteComponent")
+	#println("Continous component = $continComponent")
+	#println("\nNet continuous lane id = $(discreteComponent+continComponent)")
+	#println("$(discreteComponent),$(discreteComponent+continComponent)")
+
     end
 
     # update rec with current scene 
@@ -360,15 +401,15 @@ function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Arr
 	# Raunak adding list of colliding ego ids into the feature list that gets passed to render
 	if is_colliding==1
 		push!(feature_infos["colliding_veh_ids"],env.ego_vehs[i].id)
-		println("Collision has happened see red")
+	#	println("Collision has happened see red")
 	end
 	if is_offroad==1
 		push!(feature_infos["offroad_veh_ids"],env.ego_vehs[i].id)
-		println("Offroad has happened see yellow")
+	#	println("Offroad has happened see yellow")
 	end
 	if accel <= accel_thresh
 		push!(feature_infos["hardbrake_veh_ids"],env.ego_vehs[i].id)
-		println("Hard brake has happened see some color")
+	#	println("Hard brake has happened see some color")
 	end
     end
     return feature_infos
@@ -434,14 +475,14 @@ function render(
 	end
 
 	# If current vehicle is in the list of offroad vehicles color it yellow
-	if in(veh.id,infos["offroad_veh_ids"])
-		carcolors[veh.id]=ColorTypes.RGB([1.,1.,0.]...)
-	end
+	#if in(veh.id,infos["offroad_veh_ids"])
+	#	carcolors[veh.id]=ColorTypes.RGB([1.,1.,0.]...)
+	#end
 
 	# If current vehicle is in the list of hard brakers then color it light blue
-	if in(veh.id,infos["hardbrake_veh_ids"])
-		carcolors[veh.id]=ColorTypes.RGB([0.,1.,1.]...)
-	end
+	#if in(veh.id,infos["hardbrake_veh_ids"])
+	#	carcolors[veh.id]=ColorTypes.RGB([0.,1.,1.]...)
+	#end
     end
 
     # define a camera following the ego vehicle
@@ -454,21 +495,59 @@ function render(
         error("invalid camera type $(camtype)")
     end
     
-    # Raunak commented this out because it was creating rays that were being used for
-    # some research that Tim had been doing
-    overlays = [
-        CarFollowingStatsOverlay(env.egoids[1], 2), 
-    #    NeighborsOverlay(env.egoids[1], textparams = TextParams(x = 600, y_start=300))
-    ]
-
     # Raunak video plotting the ghost vehicle
     # See 'OrigVehicleOverlay' defined in AutoViz/src/2d/overlays.jl
     # to understand how the ghost vehicle is being plotted
-#    overlays = [
-#       CarFollowingStatsOverlay(env.egoids[1], 2)
-#	,OrigVehicleOverlay(infos["orig_x"][1],infos["orig_y"][1],infos["orig_theta"][1],infos["orig_length"][1],infos["orig_width"][1])
-#    ]
+    
+    #****Previous ghost car code that also prints car statistics on the video**********
+    #=
+    overlays = [CarFollowingStatsOverlay(env.egoids[1], 2)
+                ,
+                OrigVehicleOverlay(infos["orig_x"][1],
+			    infos["orig_y"][1],
+			    infos["orig_theta"][1],
+			    infos["orig_length"][1],
+			    infos["orig_width"][1])
+		,
+		OrigVehicleOverlay(infos["orig_x"][2],
+			    infos["orig_y"][2],
+			    infos["orig_theta"][2],
+			    infos["orig_length"][2],
+			    infos["orig_width"][2])
+		,
+		OrigVehicleOverlay(infos["orig_x"][3],
+			    infos["orig_y"][3],
+			    infos["orig_theta"][3],
+			    infos["orig_length"][3],
+			    infos["orig_width"][3])
+		]
+    =#
+    #*******************************************************************************
 
+    # Raunak 30 August: 
+    # 	Multiple ghosts without needing to hard code as in the above commented block
+    
+    # Need to start the overlays array with one example so that the type is correct
+    # Tried starting with empty array and 1 element car statistics overlay array but
+    # that didn't work as the push! I think could not deal with the differing type
+    # of the thing being pushed into the array
+    overlays = [OrigVehicleOverlay(infos["orig_x"][1],
+			    infos["orig_y"][1],
+			    infos["orig_theta"][1],
+			    infos["orig_length"][1],
+			    infos["orig_width"][1])]
+
+   # TODO End of the range on i should not be hard coded but get number of ego vehs
+   for i in 2:20
+	    push!(overlays,OrigVehicleOverlay(infos["orig_x"][i],
+						infos["orig_y"][i],
+						infos["orig_theta"][i],
+						infos["orig_length"][i],
+						infos["orig_width"][i]
+						)
+		  )
+    end
+   
 
     # rendermodel for optional rotation
     # note that for this to work, you have to comment out a line in AutoViz
