@@ -299,7 +299,8 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
 	"orig_y"=> Float64[],
 	"orig_theta"=>Float64[],
 	"orig_length"=>Float64[],
-	"orig_width"=>Float64[]
+	"orig_width"=>Float64[],
+	"laneNum"=>Float64[]
     )
     for i in 1:env.n_veh
         push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
@@ -314,6 +315,8 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
 	push!(step_infos["orig_theta"], orig_vehs[i].state.posG.θ)
 	push!(step_infos["orig_length"], orig_vehs[i].def.length)
 	push!(step_infos["orig_width"], orig_vehs[i].def.width)
+	push!(step_infos["laneNum"], env.ego_vehs[i].state.posF.roadind.tag.lane)
+
     end
 
     return step_infos

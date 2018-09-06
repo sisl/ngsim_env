@@ -48,12 +48,19 @@ multi = True
 #			FUNCTION: MULTIAGENT SIMULATE
 #-----------------------------------------------------------------------------
 def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs=dict()):
-    x = env.reset(**env_kwargs)
+    # Raunak: This x is the features arranged in shape (num_agents,num_features)
+    x = env.reset(**env_kwargs) 
     n_agents = x.shape[0]
     traj = hgail.misc.simulation.Trajectory()
     dones = [True] * n_agents
     policy.reset(dones)
     imgs = []
+    
+    # Raunak adding for lane change rate calculation
+    prevLaneNumsVector = np.zeros(n_agents) 
+    numLaneChanges = 0
+    
+    
     for step in range(max_steps):
         sys.stdout.write('\rstep: {} / {}'.format(step+1, max_steps))
         a, a_info = policy.get_actions(x)
@@ -77,6 +84,26 @@ def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs
         
         if any(dones): break
         x = nx
+
+        #************************Raunak lane change rate testing************
+        # Get the current lane id vector
+        currentLaneNumsVector = e_info['laneNum']
+        
+        # Perform subtraction to calculate difference
+        laneChangesVector = currentLaneNumsVector - prevLaneNumsVector
+        
+        numLaneChanges += np.count_nonzero(laneChangesVector)
+        
+        # Assign current to become previous lane id vector for next time step
+        prevLaneNumsVector = currentLaneNumsVector
+
+        # Verbose for finding lane change timesteps
+        #if np.count_nonzero(laneChangesVector) != 0:
+        #    print("Haha found a change\n")
+        #    print("laneChangeVector = ",laneChangesVector)
+
+
+    print("numLaneChanges = ",numLaneChanges)
     return imgs
 
 
