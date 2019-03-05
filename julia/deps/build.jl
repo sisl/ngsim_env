@@ -1,3 +1,5 @@
+using Pkg
+
 # let julia handle python internally
 ENV["PYTHON"] = ""
 
@@ -6,37 +8,35 @@ package_names = [
     "JLD",
     "GridInterpolations",
     "PyCall",
-    "PyPlot"
+    "PyPlot",
+    "HDF5"
 ]
 for name in package_names
     Pkg.add(name)
 end
 
-# clone
-urls = [
-    "https://github.com/sisl/AutomotiveDrivingModels.jl.git",
-    "https://github.com/sisl/AutoViz.jl.git",
-    "https://github.com/sisl/BayesNets.jl.git",
-    "https://github.com/sisl/NGSIM.jl.git",
-    "https://github.com/sisl/AutoRisk.jl.git",
-]
-
+# SISL packages
 packages = keys(Pkg.installed())
-for url in urls
-    try
-        id1 = search(url, "https://github.com/")[end]
-        offset = search(url[(id1[end]+1):end], "/")[end]
-        package = url[(id1+offset+1): (search(url,".jl.git")[1]-1)]
-        if !in(package, packages)
-          Pkg.clone(url)
-        else
-          println("$(package) already exists. Not cloning.")
-        end
-    catch e
-        println("Exception when cloning $(url): $(e)")
-    end
+
+if !in("Vec", packages)
+    Pkg.add(PackageSpec(url="https://github.com/sisl/Vec.jl.git"))
+end
+if !in("Records", packages)
+    Pkg.add(PackageSpec(url="https://github.com/sisl/Records.jl.git"))
+end
+if !in("NGSIM", packages)
+    Pkg.add(PackageSpec(url="https://github.com/sisl/NGSIM.jl.git"))
+end
+if !in("BayesNets", packages)
+    Pkg.add(PackageSpec(url="https://github.com/sisl/BayesNets.jl.git"))
+end
+if !in("AutomotiveDrivingModels", packages)
+    Pkg.add(PackageSpec(url="https://github.com/sisl/AutomotiveDrivingModels.jl.git"))
+end
+if !in("AutoViz", packages)
+    Pkg.add(PackageSpec(url="https://github.com/sisl/AutoViz.jl.git"))
+end
+if !in("AutoRisk", packages)
+    Pkg.add(PackageSpec(url="https://github.com/sisl/AutoRisk.jl.git#v0.7fixes"))
 end
 
-Pkg.build("AutomotiveDrivingModels")
-Pkg.build("AutoViz")
-Pkg.build("BayesNets")
