@@ -172,9 +172,9 @@ Returns:
 function sample_trajdata_vehicle(
         trajinfos, 
         offset::Int=0,
-        traj_idx::Union{Void,Int}=nothing,
-        egoid::Union{Void,Int}=nothing,
-        start::Union{Void,Int}=nothing)
+        traj_idx::Union{Nothing,Int}=nothing,
+        egoid::Union{Nothing,Int}=nothing,
+        start::Union{Nothing,Int}=nothing)
     if traj_idx == nothing || egoid == nothing || start == nothing
         traj_idx = rand(1:length(trajinfos))
         egoid = rand(collect(keys(trajinfos[traj_idx])))
@@ -218,10 +218,10 @@ function sample_multiple_trajdata_vehicle(
         trajinfos, 
         offset::Int;
         max_resamples::Int = 100,
-        egoid::Union{Void, Int} = nothing,
-        traj_idx::Union{Void, Int} = nothing,
+        egoid::Union{Nothing, Int} = nothing,
+        traj_idx::Union{Nothing, Int} = nothing,
         verbose::Bool = true,
-        rseed::Union{Void, Int} = nothing)
+        rseed::Union{Nothing, Int} = nothing)
     
     if rseed != nothing
         srand(rseed)

@@ -16,12 +16,12 @@ type NGSIMEnv <: Env
     trajdatas::Vector{ListRecord}
     trajinfos::Vector{Dict}
     roadways::Vector{Roadway}
-    roadway::Union{Void, Roadway} # current roadway
+    roadway::Union{Nothing, Roadway} # current roadway
     scene::Scene
     rec::SceneRecord
     ext::MultiFeatureExtractor
     egoid::Int # current id of relevant ego vehicle
-    ego_veh::Union{Void, Vehicle} # the ego vehicle
+    ego_veh::Union{Nothing, Vehicle} # the ego vehicle
     traj_idx::Int # current index into trajdatas 
     t::Int # current timestep in the trajdata
     h::Int # current maximum horizon for egoid
@@ -39,9 +39,9 @@ type NGSIMEnv <: Env
     infos_cache::Dict # cache for infos intermediate results
     function NGSIMEnv(
             params::Dict; 
-            trajdatas::Union{Void, Vector{ListRecord}} = nothing,
-            trajinfos::Union{Void, Vector{Dict}} = nothing,
-            roadways::Union{Void, Vector{Roadway}} = nothing,
+            trajdatas::Union{Nothing, Vector{ListRecord}} = nothing,
+            trajinfos::Union{Nothing, Vector{Dict}} = nothing,
+            roadways::Union{Nothing, Vector{Roadway}} = nothing,
             reclength::Int = 5,
             Δt::Float64 = .1,
             primesteps::Int = 50,
@@ -93,8 +93,8 @@ end
 function reset(
         env::NGSIMEnv; 
         offset::Int=env.H + env.primesteps,
-        egoid::Union{Void,Int}=nothing, 
-        start::Union{Void,Int}=nothing,
+        egoid::Union{Nothing,Int}=nothing, 
+        start::Union{Nothing,Int}=nothing,
         traj_idx::Int=1)
     # sample the trajectory, ego vehicle
     env.traj_idx, env.egoid, env.t, env.h = sample_trajdata_vehicle(

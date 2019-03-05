@@ -19,12 +19,12 @@ type MultiagentNGSIMEnvVideoMaker <: Env
     trajdatas::Vector{ListRecord}
     trajinfos::Vector{Dict}
     roadways::Vector{Roadway}
-    roadway::Union{Void, Roadway} # current roadway
+    roadway::Union{Nothing, Roadway} # current roadway
     scene::Scene
     rec::SceneRecord
     ext::MultiFeatureExtractor
     egoids::Vector{Int} # current ids of relevant ego vehicles
-    ego_vehs::Vector{Union{Void, Vehicle}} # the ego vehicles
+    ego_vehs::Vector{Union{Nothing, Vehicle}} # the ego vehicles
     traj_idx::Int # current index into trajdatas 
     t::Int # current timestep in the trajdata
     h::Int # current maximum horizon for egoid
@@ -43,9 +43,9 @@ type MultiagentNGSIMEnvVideoMaker <: Env
     infos_cache::Dict # cache for infos intermediate results
     function MultiagentNGSIMEnvVideoMaker(
             params::Dict; 
-            trajdatas::Union{Void, Vector{ListRecord}} = nothing,
-            trajinfos::Union{Void, Vector{Dict}} = nothing,
-            roadways::Union{Void, Vector{Roadway}} = nothing,
+            trajdatas::Union{Nothing, Vector{ListRecord}} = nothing,
+            trajinfos::Union{Nothing, Vector{Dict}} = nothing,
+            roadways::Union{Nothing, Vector{Roadway}} = nothing,
             reclength::Int = 5,
             Δt::Float64 = .1,
             primesteps::Int = 50,
@@ -121,7 +121,7 @@ function reset(
         env::MultiagentNGSIMEnvVideoMaker,
         dones::Vector{Bool} = fill!(Vector{Bool}(env.n_veh), true); 
         offset::Int=env.H + env.primesteps,
-        random_seed::Union{Void, Int} = nothing)
+        random_seed::Union{Nothing, Int} = nothing)
     # enforce environment invariant reset property 
     # (i.e., always either all true or all false)
     @assert (all(dones) || all(.!dones))
