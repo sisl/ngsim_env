@@ -15,7 +15,7 @@ Description:
     Raunak: This is basically a copy of multiagent_ngsim_env.jl with just 
     a few additions to enable color coded video making
 =#
-type MultiagentNGSIMEnvVideoMaker <: Env
+mutable struct MultiagentNGSIMEnvVideoMaker <: Env
     trajdatas::Vector{ListRecord}
     trajinfos::Vector{Dict}
     roadways::Vector{Roadway}

@@ -14,7 +14,7 @@ Description:
     NGSIM env that plays NGSIM trajectories, allowing the agent to take the place 
     of one of the vehicles in the trajectory
 =#
-type VectorizedNGSIMEnv <: Env
+mutable struct VectorizedNGSIMEnv <: Env
     n_envs::Int
     envs::Vector{NGSIMEnv}
     x::Array{Float64}

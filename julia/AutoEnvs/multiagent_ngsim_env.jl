@@ -12,7 +12,7 @@ Description:
     Multiagent NGSIM env that plays NGSIM trajectories, allowing a variable 
     number of agents to simultaneously control vehicles in the scene
 =#
-type MultiagentNGSIMEnv <: Env
+mutable struct MultiagentNGSIMEnv <: Env
     trajdatas::Vector{ListRecord}
     trajinfos::Vector{Dict}
     roadways::Vector{Roadway}

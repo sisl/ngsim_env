@@ -13,7 +13,7 @@ Description:
     Action 2 yields 2 reward.
     Terminates after the single action.
 =#
-type DeterministicSingleStepDebugEnv <: Env
+mutable struct DeterministicSingleStepDebugEnv <: Env
     function DeterministicSingleStepDebugEnv(params::Dict=Dict())
         return new()
     end

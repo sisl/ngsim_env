@@ -12,7 +12,7 @@ Description:
     NGSIM env that plays NGSIM trajectories, allowing the agent to take the place 
     of one of the vehicles in the trajectory
 =#
-type NGSIMEnv <: Env
+mutable struct NGSIMEnv <: Env
     trajdatas::Vector{ListRecord}
     trajinfos::Vector{Dict}
     roadways::Vector{Roadway}
