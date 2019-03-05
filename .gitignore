@@ -148,3 +148,6 @@ CTestTestfile.cmake
 # experiment logs, but keep folder
 scripts/imitation/logs/*
 *.swp
+
+# fuse...
+.fuse*
