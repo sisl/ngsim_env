@@ -34,13 +34,13 @@ function test_basics()
     acc_idx = [i for (i,n) in enumerate(fns) if "accel" == n][1]
     tur_idx = [i for (i,n) in enumerate(fns) if "turn_rate_global" == n][1]
     a = zeros(n_veh, 2)
-    a[:, 2] = 1
+    a[:, 2] .= 1
     for _ in 1:10
         nx, _, _, _ = step(env, a)
     end
 
     @test all(abs.(nx[:, acc_idx]) .<= 1e-1)
-    @test all(abs.(nx[:, tur_idx] - 1) .<= 1e-1)
+    @test all(abs.(nx[:, tur_idx] .- 1) .<= 1e-1)
 
     # test infos 
     reset(env)

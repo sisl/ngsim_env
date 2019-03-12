@@ -119,7 +119,7 @@ Args:
 =#
 function reset(
         env::MultiagentNGSIMEnv,
-        dones::Vector{Bool} = fill!(Vector{Bool}(env.n_veh), true); 
+        dones::Vector{Bool} = fill!(Vector{Bool}(undef, env.n_veh), true); 
         offset::Int=env.H + env.primesteps,
         random_seed::Union{Nothing, Int} = nothing)
     # enforce environment invariant reset property 
@@ -178,7 +178,7 @@ Args:
 function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
     # make sure number of actions passed in equals number of vehicles
     @assert size(action, 1) == env.n_veh
-    ego_states = Vector{VehicleState}(env.n_veh)
+    ego_states = Vector{VehicleState}(undef, env.n_veh)
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
         # convert action into form 
@@ -199,7 +199,7 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
     if env.remove_ngsim_veh
         keep_vehicle_subset!(env.scene, env.egoids)
     end
-    orig_vehs = Vector{Vehicle}(env.n_veh)
+    orig_vehs = Vector{Vehicle}(undef, env.n_veh)
 
     for (i, egoid) in enumerate(env.egoids)
 	    vehidx = findfirst(egoid, env.scene)
