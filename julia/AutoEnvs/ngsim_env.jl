@@ -115,7 +115,7 @@ function reset(
         update!(env.rec, get!(env.scene, env.trajdatas[env.traj_idx], t))
     end
     # set the ego vehicle
-    env.ego_veh = env.scene[findfirst(env.scene, env.egoid)]
+    env.ego_veh = env.scene[findfirst(env.egoid, env.scene)]
     # set the roadway
     env.roadway = env.roadways[env.traj_idx]
     # env.t is the next timestep to load
@@ -148,7 +148,7 @@ function _step!(env::NGSIMEnv, action::Array{Float64})
 
     # load the actual scene, and insert the vehicle into it
     get!(env.scene, env.trajdatas[env.traj_idx], env.t)
-    vehidx = findfirst(env.scene, env.egoid)
+    vehidx = findfirst(env.egoid, env.scene)
     orig_veh = env.scene[vehidx] # for infos purposes
     env.scene[vehidx] = env.ego_veh
 
@@ -213,7 +213,7 @@ function _compute_feature_infos(env::NGSIMEnv, features::Array{Float64})
     )
 end
 function AutoRisk.get_features(env::NGSIMEnv)
-    veh_idx = findfirst(env.scene, env.egoid)
+    veh_idx = findfirst(env.egoid, env.scene)
     pull_features!(env.ext, env.rec, env.roadway, veh_idx)
     return deepcopy(env.ext.features)
 end

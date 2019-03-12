@@ -1,12 +1,11 @@
-__precompile__(true)
 module AutoEnvs
 
 using AutoRisk
 using AutoViz
 using HDF5
-using JLD
+using JLD2
+using FileIO
 using NGSIM
-using PyPlot
 
 import AutoViz: render
 import Base: reset, step

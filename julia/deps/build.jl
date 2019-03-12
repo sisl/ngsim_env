@@ -1,22 +1,27 @@
 using Pkg
 
 # let julia handle python internally
-ENV["PYTHON"] = ""
+#ENV["PYTHON"] = ""
+
+# What has already been installed
+packages = keys(Pkg.installed())
 
 # add 
 package_names = [
-    "JLD",
+    "FileIO",
+    "JLD2",
     "GridInterpolations",
     "PyCall",
     "PyPlot",
     "HDF5"
 ]
 for name in package_names
-    Pkg.add(name)
+    if !in(name, packages)
+        Pkg.add(name)
+    end
 end
 
 # SISL packages
-packages = keys(Pkg.installed())
 
 if !in("Vec", packages)
     Pkg.add(PackageSpec(url="https://github.com/sisl/Vec.jl.git"))
