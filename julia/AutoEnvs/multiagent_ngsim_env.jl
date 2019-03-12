@@ -155,7 +155,7 @@ function reset(
 
     # set the ego vehicle
     for (i, egoid) in enumerate(env.egoids)
-        vehidx = findfirst(env.scene, egoid)
+        vehidx = findfirst(egoid, env.scene)
         env.ego_vehs[i] = env.scene[vehidx]
     end
     # set the roadway
@@ -202,7 +202,7 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
     orig_vehs = Vector{Vehicle}(env.n_veh)
 
     for (i, egoid) in enumerate(env.egoids)
-	    vehidx = findfirst(env.scene, egoid)
+	    vehidx = findfirst(egoid, env.scene)
 
         # track the original vehicle for validation / infos purposes
         orig_vehs[i] = env.scene[vehidx]
@@ -235,9 +235,9 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
         "orig_width"=>Float64[]
     )
     for i in 1:env.n_veh
-        push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
-        push!(step_infos["rmse_vel"], sqrt(abs2((orig_vehs[i].state.v - env.ego_vehs[i].state.v))))
-        push!(step_infos["rmse_t"], sqrt(abs2((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t))))
+        push!(step_infos["rmse_pos"], norm((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG)))
+        push!(step_infos["rmse_vel"], norm((orig_vehs[i].state.v - env.ego_vehs[i].state.v)))
+        push!(step_infos["rmse_t"], norm((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t)))
         push!(step_infos["x"], env.ego_vehs[i].state.posG.x)
         push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
         push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
@@ -324,7 +324,7 @@ end
 
 function AutoRisk.get_features(env::MultiagentNGSIMEnv)
     for (i, egoid) in enumerate(env.egoids)
-        veh_idx = findfirst(env.scene, egoid)
+        veh_idx = findfirst(egoid, env.scene)
         pull_features!(env.ext, env.rec, env.roadway, veh_idx)
         env.features[i, :] = deepcopy(env.ext.features)
     end

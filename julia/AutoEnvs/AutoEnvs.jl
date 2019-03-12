@@ -6,6 +6,7 @@ using HDF5
 using JLD2
 using FileIO
 using NGSIM
+using LinearAlgebra
 
 import AutoViz: render
 import Base: reset, step

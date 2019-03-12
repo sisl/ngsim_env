@@ -157,9 +157,9 @@ function _step!(env::NGSIMEnv, action::Array{Float64})
 
     # compute info about the step
     step_infos = Dict{String, Float64}()
-    step_infos["rmse_pos"] = sqrt(abs2((orig_veh.state.posG - env.ego_veh.state.posG)))
-    step_infos["rmse_vel"] = sqrt(abs2((orig_veh.state.v - env.ego_veh.state.v)))
-    step_infos["rmse_t"] = sqrt(abs2((orig_veh.state.posF.t - env.ego_veh.state.posF.t)))
+    step_infos["rmse_pos"] = norm((orig_veh.state.posG - env.ego_veh.state.posG))
+    step_infos["rmse_vel"] = norm((orig_veh.state.v - env.ego_veh.state.v))
+    step_infos["rmse_t"] = norm((orig_veh.state.posF.t - env.ego_veh.state.posF.t))
     step_infos["x"] = env.ego_veh.state.posG.x
     step_infos["y"] = env.ego_veh.state.posG.y
     step_infos["s"] = env.ego_veh.state.posF.s

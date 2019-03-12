@@ -13,7 +13,8 @@ package_names = [
     "GridInterpolations",
     "PyCall",
     "PyPlot",
-    "HDF5"
+    "HDF5",
+    "LinearAlgebra"
 ]
 for name in package_names
     if !in(name, packages)

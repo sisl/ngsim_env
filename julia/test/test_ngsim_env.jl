@@ -1,9 +1,10 @@
-using Base.Test
+using Test
 using AutoEnvs
+using NGSIM
 
 function test_simple_ctor()
     srand(2)
-    filepath = Pkg.dir("NGSIM", "data", "trajdata_i80_trajectories-0400-0415.txt")
+    filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", "trajdata_i80_trajectories-0400-0415.txt")
     params = Dict(
         "trajectory_filepaths"=>[filepath],
         "H"=>40,
@@ -17,7 +18,7 @@ end
 
 function test_basics()
     # ctor
-    filepath = Pkg.dir("NGSIM", "data", "trajdata_i80_trajectories-0400-0415.txt")
+    filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", "trajdata_i80_trajectories-0400-0415.txt")
     params = Dict("trajectory_filepaths"=>[filepath], "H"=>200)
     env = NGSIMEnv(params)
 
@@ -71,7 +72,7 @@ function test_all_roadways()
         "trajdata_i101_trajectories-0750am-0805am.txt"
     ]
     for fn in filenames
-        filepath = Pkg.dir("NGSIM", "data", fn)
+        filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", fn)
         params = Dict(
             "trajectory_filepaths"=>[filepath],
             "H"=>50,
@@ -84,7 +85,7 @@ end
 
 function test_render()
     srand(2)
-    filepath = Pkg.dir("NGSIM", "data", "trajdata_i101_trajectories-0805am-0820am.txt")
+    filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", "trajdata_i101_trajectories-0805am-0820am.txt")
     params = Dict(
         "trajectory_filepaths"=>[filepath],
         "H"=>200,
