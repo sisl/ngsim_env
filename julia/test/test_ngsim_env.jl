@@ -47,7 +47,7 @@ function test_basics()
     end
     
     @test abs(nx[acc_idx]) <= 1e-1
-    @test abs(nx[tur_idx] - 1) <= 1e-1
+    @test abs(nx[tur_idx] .- 1) <= 1e-1
 
     # test infos 
     reset(env)
