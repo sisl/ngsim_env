@@ -12,7 +12,7 @@ class JuliaEnv(Env):
 
         # initialize julia
         self.j = julia.Julia()
-        self.j.eval('include(\"{}\")'.format(os.path.expanduser('~/.juliarc.jl')))
+        self.j.eval('include(\"{}\")'.format(os.path.expanduser('~/.julia/config/startup.jl')))
         self.j.using(using)
 
         # initialize environment
