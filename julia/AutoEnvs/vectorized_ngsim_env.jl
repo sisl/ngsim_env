@@ -52,7 +52,7 @@ mutable struct VectorizedNGSIMEnv <: Env
         )
 
         # build envs
-        envs = Vector{NGSIMEnv}(n_envs)
+        envs = Vector{NGSIMEnv}(undef, n_envs)
         for i in 1:n_envs
             envs[i] = NGSIMEnv(
                 params,
@@ -71,12 +71,12 @@ mutable struct VectorizedNGSIMEnv <: Env
         n_features = length(obs_names(envs[1]))
         x = zeros(n_envs, n_features)
         r = zeros(n_envs)
-        dones = Vector{Bool}(n_envs)
+        dones = Vector{Bool}(undef, n_envs)
 
         return new(n_envs, envs, x, r, dones)
     end
 end
-function reset(env::VectorizedNGSIMEnv, dones::Vector{Bool} = fill!(Vector{Bool}(env.n_envs), true))
+function reset(env::VectorizedNGSIMEnv, dones::Vector{Bool} = fill!(Vector{Bool}(undef, env.n_envs), true))
     for i in 1:env.n_envs
         if dones[i]
             env.x[i, :] = reset(env.envs[i])
@@ -85,7 +85,7 @@ function reset(env::VectorizedNGSIMEnv, dones::Vector{Bool} = fill!(Vector{Bool}
     return deepcopy(env.x)
 end 
 function Base.step(env::VectorizedNGSIMEnv, actions::Array{Float64})
-    infos = Vector{Dict}(env.n_envs)
+    infos = Vector{Dict}(undef, env.n_envs)
     for i in 1:env.n_envs
             env.x[i, :], env.r[i], env.dones[i], infos[i] = step(env.envs[i], actions[i, :])
     end
