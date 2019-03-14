@@ -30,4 +30,4 @@ function test_basics()
     
 end
 
-#@time test_basics()
+@time test_basics()
