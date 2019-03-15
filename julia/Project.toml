@@ -1,0 +1,25 @@
+name = "AutoEnvs" 
+uuid = "b0c92c82-45e2-5f35-82fd-3b99a2ee9dd8"
+
+[deps]
+AutoEnvs = "b0c92c82-45e2-5f35-82fd-3b99a2ee9dd8"
+AutoRisk = "c91b7102-3640-11e9-1a5c-f77073b5ac95"
+AutoViz = "82aa6e0c-a491-5edf-8d4b-c16b98e4ea17"
+AutomotiveDrivingModels = "99497e54-f3d6-53d3-a3a9-fa9315a7f1ba"
+BayesNets = "ba4760a4-c768-5bed-964b-cf806dc591cb"
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+GridInterpolations = "bb4c363b-b914-514b-8517-4eb369bc008a"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+NGSIM = "195157bc-cedd-5875-9ea7-7cfb75f30b3c"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+Records = "5984c134-fa48-5ed5-a57f-fc2f6936871f"
+Vec = "44eeaf0b-fee4-471f-9310-ed6585cb3142"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

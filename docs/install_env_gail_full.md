@@ -41,32 +41,36 @@ Install julia 1.1. See the internet for instructions. Make sure the `julia` comm
 ```bash
 source activate rllab3
 git clone https://github.com/sisl/ngsim_env.git
-# this takes a long time
-julia ngsim_env/julia/deps/build.jl
-
-# make the julia startup directory
-mkdir ~/.julia/config
-# manually add AutoEnvs
-echo "push!(LOAD_PATH, \"$(pwd)/ngsim_env/julia/AutoEnvs\")" >> ~/.julia/config/startup.jl
+sudo apt-get install libgtk-3-dev
 
 # enter a julia interpreter
 julia
+  # Add dependences
+  using Pkg
+  Pkg.add(PackageSpec(url="https://github.com/sisl/Vec.jl"))
+  Pkg.add(PackageSpec(url="https://github.com/sisl/Records.jl"))
+  Pkg.add(PackageSpec(url="https://github.com/sisl/AutomotiveDrivingModels.jl"))
+  Pkg.add(PackageSpec(url="https://github.com/sisl/NGSIM.jl.git"))
+  Pkg.add(PackageSpec(url="https://github.com/sisl/BayesNets.jl.git"))
+  Pkg.add(PackageSpec(url="https://github.com/sisl/AutoViz.jl"))
+  Pkg.add(PackageSpec(url="https://github.com/sisl/AutoRisk.jl.git", rev="v0.7fixes"))
+
+  # Add the local AutoEnvs module to our julia environment
+  ] dev ~/ngsim_env/julia
+ 
+  # make sure it works
+  using AutoEnvs
+
   # set python path (replace with your miniconda3 install location)
   >>ENV["PYTHON"] = "/home/<your_username_here>/miniconda3/envs/rllab3/bin/python"
-  # if any of this raises a bug, fix it before moving on
-  # this installs the julia-internal conda referenced above
+  >>using Pkg
+  >>Pkg.build("PyCall")
+  >>Pkg.build("PyPlot")
   >>using PyCall
   >>using PyPlot
-    # takes a while
-  # WIP: Not sure if the below is required since we push the load_path to startup.jl
-  >> ] dev ~/ngsim_env/julia/AutoEnvs/
-  >> using AutoEnvs
-  # If this AutoEnvs step errors saying problems with HDF5, just do what it suggests
-  >> Pkg.build("HDF5")
-  # If the above errors, do what is says i.e. sudo apt-get install hdf5-tools
+  >>Pkg.build("HDF5")
   >> quit()
   # If it doesn't work immediately, I got an error saying extra trailing apt, restart the terminal and try again
-  # Now let's go back to Julia and try using AutoEnvs again
 ```
 
 Next, we will get the NGSIM data and run a few tests with julia and python to make sure everything is fine
