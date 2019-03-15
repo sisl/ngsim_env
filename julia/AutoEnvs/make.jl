@@ -11,15 +11,15 @@ function make(env_id::String, env_params::Dict)
             return VectorizedNGSIMEnv(env_params)
         elseif env_id == "MultiagentNGSIMEnv"
             return MultiagentNGSIMEnv(env_params)
-	elseif env_id == "MultiagentNGSIMEnvVideoMaker"
+	    elseif env_id == "MultiagentNGSIMEnvVideoMaker"
 	    	#println("RAUNAK make.jl says video maker")
-		return MultiagentNGSIMEnvVideoMaker(env_params)
+		    return MultiagentNGSIMEnvVideoMaker(env_params)
         else
             throw(ArgumentError("Invalid env_id: $(env_id)"))
         end
     catch e
-        println("exception raised while making environment")
-        println(backtrace(e))
+        println("exception raised while making environment, env_id: $(env_id)")
+        println(backtrace())
         println(e)
         rethrow(e)
     end
