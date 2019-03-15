@@ -16,8 +16,16 @@ cd rllab
 # this takes a while
 conda env create -f environment.yml
 conda env update
+# this may give an error about twisted, tensorflow dpeending on a different numpy version. Ignore it for now.
 # If hdf5 is not installed, install it as it is required by AutoEnvs later in the process
+sudo apt-get install hdf5-tools
 conda install hdf5
+conda install matplotlib
+# Check the install went through correctly
+python
+    >>>import mpl_toolkits
+    >>>quit()
+
 # activate the rllab environment
 source activate rllab3
 python setup.py develop
@@ -25,91 +33,50 @@ cd ..
 ```
 
 ## Install julia
-```bash
-source deactivate
-# install our own version of julia
-wget https://julialang-s3.julialang.org/bin/linux/x64/0.6/julia-0.6.2-linux-x86_64.tar.gz
-tar -xf julia-0.6.2-linux-x86_64.tar.gz
-rm julia-0.6.2-linux-x86_64.tar.gz
+Install julia 1.1. See the internet for instructions. Make sure the `julia` command pops up a julia 1.1 interpreter. More detailed instructions coming later.
 
-# add this line to avoid a pyjulia issue where it uses the wrong julia
-# this makes it so that by default we use this julia install
-echo "export PATH=$(pwd)/julia-d386e40c17/bin:\$PATH" >> ~/.bashrc
-source ~/.bashrc
-```
-
-## ngsim_env
+## Install ngsim_env
 
 ### julia
 ```bash
-source activate rllab3 # this is probably not necessary, but just in case
+source activate rllab3
 git clone https://github.com/sisl/ngsim_env.git
 # this takes a long time
 julia ngsim_env/julia/deps/build.jl
 
-# this avoids a bug
-echo "using Iterators" >> ~/.juliarc.jl
-# avoiding a PyPlot bug
-echo "export LD_PRELOAD=${HOME}/.julia/v0.6/Conda/deps/usr/lib/libz.so" >> ~/.bashrc 
-source ~/.bashrc
+# make the julia startup directory
+mkdir ~/.julia/config
 # manually add AutoEnvs
-echo "push!(LOAD_PATH, \"$(pwd)/ngsim_env/julia/AutoEnvs\")" >> ~/.juliarc.jl
-
-# Revert to a previous version of Vec.jl
-cd ~/.julia/v0.6/Vec
-git fetch --tags
-git checkout v0.1.0
-
-# Revert  AutomotiveDrivingModels to commit before update for Vec.jl
-cd ~/.julia/v0.6/AutomotiveDrivingModels
-git checkout 74050e9ae44bda72a485c2573ac4f0df2bc3e767
+echo "push!(LOAD_PATH, \"$(pwd)/ngsim_env/julia/AutoEnvs\")" >> ~/.julia/config/startup.jl
 
 # enter a julia interpreter
 julia
   # set python path (replace with your miniconda3 install location)
-  >>ENV["PYTHON"] = "/home/wulfebw2/miniconda3/envs/rllab3/bin/python"
+  >>ENV["PYTHON"] = "/home/<your_username_here>/miniconda3/envs/rllab3/bin/python"
   # if any of this raises a bug, fix it before moving on
   # this installs the julia-internal conda referenced above
   >>using PyCall
   >>using PyPlot
     # takes a while
-      # If this errors ImportError('No module named mpl_toolkits.mplot3d',), you need to upgrade matplotlib
-  >>quit()
-# The following steps (until and including python quit()) are only required if julia gives 
-# an import error while using PyPlot
-pip install --upgrade matplotlib
-# Check the install went through correctly
-python
-    >>>import mpl_toolkits
-    >>>quit()
-
-# Open up Julia interpreter again and try using PyPlot again
-julia
-  >> using PyPlot
-  >>using AutoEnvs
+  # WIP: Not sure if the below is required since we push the load_path to startup.jl
+  >> ] dev ~/ngsim_env/julia/AutoEnvs/
+  >> using AutoEnvs
   # If this AutoEnvs step errors saying problems with HDF5, just do what it suggests
   >> Pkg.build("HDF5")
   # If the above errors, do what is says i.e. sudo apt-get install hdf5-tools
   >> quit()
-sudo apt-get install hdf5-tools
   # If it doesn't work immediately, I got an error saying extra trailing apt, restart the terminal and try again
   # Now let's go back to Julia and try using AutoEnvs again
-julia
-  >> using AutoEnvs
-  >> quit()
 ```
+
 Next, we will get the NGSIM data and run a few tests with julia and python to make sure everything is fine
 
 ### download NGSIM data
 ```bash
 ##Get the data
-cd ~/.julia/v0.6/NGSIM/data
+cd ~/.julia/packages/NGSIM/B45UX/data
 wget https://github.com/sisl/NGSIM.jl/releases/download/v1.0.0/data.zip
 unzip data.zip
-
-##Fix a trajectory converstion script
-cd ../src
-#change line 205 of .julia/v0.6/NGSIM/src/trajdata.jl" to outpath = Pkg.dir("NGSIM", "data", "trajdata_"*splitdir(filename)[2])
 
 ##Create trajectories from the data
 cd ../data
@@ -125,30 +92,21 @@ julia
 # run the julia tests
 # if you don't get an error, everything works with julia
 # it will take a few minutes because it's creating some cached files
-cd ngsim_env/julia/test
+cd ~/ngsim_env/julia/test
 julia runtests.jl
-cd ../../..
+cd ~
 ```
 
 ### run python tests
 ```bash
 # install the python components of the package
 source activate rllab3
-cd ngsim_env/python # this is assuming you have ngsim_env on your home directory. If not, navigate to where you have ngsim_env
+cd ~/ngsim_env/python # this is assuming you have ngsim_env on your home directory. If not, navigate to where you have ngsim_env
 python setup.py develop
-pip install julia
+conda install julia
 cd tests
-# one of the these tests will fail if you don't have hgail installed
-
+# NTOE: one of the these tests will fail if you don't have hgail installed
 python runtests.py
-  # if you get a segfault, need to delete the PyCall.jl cache file
-
-  cd ~/.julia/lib/v0.6
-  rm PyCall.jl
-  # Check
-  python
-    >>>import julia
-    >>>quit()
 
 # After removing PyCall.jl let's try the test again (all this is assuming you got a seg fault)
 cd ~/ngsim_env/python/tests
@@ -176,11 +134,6 @@ cd ~/ngsim_env
 mkdir data
 mkdir data/trajectories
 mkdir data/experiments
-cd scripts
-julia
-  >> Pkg.checkout("AutomotiveDrivingModels", "lidar_sensor_optimization")
-  >> quit()
-
 cd ~/ngsim_env/scripts
 
 julia extract_ngsim_demonstrations.jl

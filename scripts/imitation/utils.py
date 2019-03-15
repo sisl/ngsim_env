@@ -121,7 +121,7 @@ def build_ngsim_env(
         vectorize=False,
         render_params=None,
         videoMaking=False):
-    basedir = os.path.expanduser('~/.julia/v0.6/NGSIM/data')
+    basedir = os.path.expanduser('~/.julia/packages/NGSIM/B45UX/data')
     filepaths = [os.path.join(basedir, args.ngsim_filename)]
     if render_params is None:
         render_params = dict(
