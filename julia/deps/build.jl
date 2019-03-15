@@ -43,6 +43,6 @@ if !in("AutoViz", packages)
     Pkg.add(PackageSpec(url="https://github.com/sisl/AutoViz.jl.git"))
 end
 if !in("AutoRisk", packages)
-    Pkg.add(PackageSpec(url="https://github.com/sisl/AutoRisk.jl.git#v0.7fixes"))
+    Pkg.add(PackageSpec(url="https://github.com/sisl/AutoRisk.jl.git", rev="v0.7fixes"))
 end
 
