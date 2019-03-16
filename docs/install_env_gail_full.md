@@ -157,6 +157,7 @@ cd hgail
 python setup.py develop
 cd tests 
 python runtests.py
+# NOTE: One of the tests fails for me across multiple installs. "test_train_domain_matters"
 cd ~/ngsim_env
 mkdir data
 mkdir data/trajectories
