@@ -42,18 +42,21 @@ Install julia 1.1. See the internet for instructions. Make sure the `julia` comm
 source activate rllab3
 git clone https://github.com/sisl/ngsim_env.git
 sudo apt-get install libgtk-3-dev
+#   NOTE: If you do not have sudo access, you can probably get away with not doing this, there just may be an error when adding AutoViz.
 
-# enter a julia interpreter
+# enter a julia interpreter and install dependencies.
+#   NOTE: I got some weird error with one of the packages, I think it was AutoViz, where there was a line ending before expected or something like that.
+#   I just repeated the add instruction and it seemed to work fine.
 julia
   # Add dependences
   using Pkg
   Pkg.add(PackageSpec(url="https://github.com/sisl/Vec.jl"))
   Pkg.add(PackageSpec(url="https://github.com/sisl/Records.jl"))
   Pkg.add(PackageSpec(url="https://github.com/sisl/AutomotiveDrivingModels.jl"))
-  Pkg.add(PackageSpec(url="https://github.com/sisl/NGSIM.jl.git"))
-  Pkg.add(PackageSpec(url="https://github.com/sisl/BayesNets.jl.git"))
   Pkg.add(PackageSpec(url="https://github.com/sisl/AutoViz.jl"))
   Pkg.add(PackageSpec(url="https://github.com/sisl/AutoRisk.jl.git", rev="v0.7fixes"))
+  Pkg.add(PackageSpec(url="https://github.com/sisl/NGSIM.jl.git"))
+  Pkg.add(PackageSpec(url="https://github.com/sisl/BayesNets.jl.git"))
 
   # Add the local AutoEnvs module to our julia environment
   ] dev ~/ngsim_env/julia
@@ -61,6 +64,7 @@ julia
   # make sure it works
   using AutoEnvs
 
+  # NOTE - I did not have to do this on a new install on a remote server.
   # set python path (replace with your miniconda3 install location)
   >>ENV["PYTHON"] = "/home/<your_username_here>/miniconda3/envs/rllab3/bin/python"
   >>using Pkg
@@ -133,7 +137,8 @@ git clone https://github.com/sisl/hgail.git
 source activate rllab3
 cd hgail
 python setup.py develop
-cd tests python runtests.py
+cd tests python 
+python runtests.py
 cd ~/ngsim_env
 mkdir data
 mkdir data/trajectories
