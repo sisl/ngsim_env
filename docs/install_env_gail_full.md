@@ -19,12 +19,24 @@ conda env update
 # this may give an error about twisted, tensorflow dpeending on a different numpy version. Ignore it for now.
 # If hdf5 is not installed, install it as it is required by AutoEnvs later in the process
 sudo apt-get install hdf5-tools
-conda install hdf5
-conda install matplotlib
+conda activate rllab3
+# TRYING WITHOUT: pip install hdf5
+# TRYING WITHOUT: pip install matplotlib
 # Check the install went through correctly
 python
-    >>>import mpl_toolkits
-    >>>quit()
+    import numpy as np
+    import tensorflow as tf
+    import mpl_toolkits
+    quit()
+# NOTE: I had some issues with tensorflow upgrading to v 2.0, which as you may imagine, breaks things.
+# If you encounter this issue, there may be some manual downgrading / reinstalling of tensorflow and numpy required.
+# I am testting with downgrading tensorflow.
+conda activate rllab3
+pip install tensorflow==1.12.0
+pip install numpy==1.15.4
+# then test the above again
+
+
 
 # activate the rllab environment
 source activate rllab3
@@ -41,6 +53,8 @@ Install julia 1.1. See the internet for instructions. Make sure the `julia` comm
 ```bash
 source activate rllab3
 git clone https://github.com/sisl/ngsim_env.git
+cd ngsim_env.git
+git checkout 0.7fixes_in_progress
 sudo apt-get install libgtk-3-dev
 #   NOTE: If you do not have sudo access, you can probably get away with not doing this, there just may be an error when adding AutoViz.
 
@@ -48,7 +62,7 @@ sudo apt-get install libgtk-3-dev
 #   NOTE: I got some weird error with one of the packages, I think it was AutoViz, where there was a line ending before expected or something like that.
 #   I just repeated the add instruction and it seemed to work fine.
 julia
-  # Add dependences
+  # Add dependencesjulia
   using Pkg
   Pkg.add(PackageSpec(url="https://github.com/sisl/Vec.jl"))
   Pkg.add(PackageSpec(url="https://github.com/sisl/Records.jl"))
@@ -63,18 +77,19 @@ julia
  
   # make sure it works
   using AutoEnvs
+```
 
-  # NOTE - I did not have to do this on a new install on a remote server.
-  # set python path (replace with your miniconda3 install location)
-  >>ENV["PYTHON"] = "/home/<your_username_here>/miniconda3/envs/rllab3/bin/python"
-  >>using Pkg
-  >>Pkg.build("PyCall")
-  >>Pkg.build("PyPlot")
-  >>using PyCall
-  >>using PyPlot
-  >>Pkg.build("HDF5")
-  >> quit()
-  # If it doesn't work immediately, I got an error saying extra trailing apt, restart the terminal and try again
+Now, we want to make sure we add the other files we care about.
+```
+julia deps/build.jl
+
+# make sure they work, by entering interpreter
+
+julia
+  using PyCall
+  using PyPlot
+  using HDF5
+  quit()
 ```
 
 Next, we will get the NGSIM data and run a few tests with julia and python to make sure everything is fine
@@ -85,13 +100,14 @@ Next, we will get the NGSIM data and run a few tests with julia and python to ma
 cd ~/.julia/packages/NGSIM/B45UX/data
 wget https://github.com/sisl/NGSIM.jl/releases/download/v1.0.0/data.zip
 unzip data.zip
+# Answer yes to any that ask to be replaced.
 
 ##Create trajectories from the data
-cd ../data
 julia
   >> using NGSIM
   >> convert_raw_ngsim_to_trajdatas()
   >> quit()
+# NOTE: my attempt got killed here and i have no idea why. No error messages or anything.
 ```
 
 ### run julia tests
@@ -111,22 +127,24 @@ cd ~
 source activate rllab3
 cd ~/ngsim_env/python # this is assuming you have ngsim_env on your home directory. If not, navigate to where you have ngsim_env
 python setup.py develop
-conda install julia
+pip install julia
+# make sure it works:
+python
+  import julia
+  julia.Julia()
+  # we just want to make sure it doesnt error
+  quit()
+
 cd tests
-# NTOE: one of the these tests will fail if you don't have hgail installed
+# NOTE: one of the these tests will fail if you don't have hgail installed
 python runtests.py
-
-# After removing PyCall.jl let's try the test again (all this is assuming you got a seg fault)
-cd ~/ngsim_env/python/tests
-python runtests.py
-  # If you get the error: 
-  # ERROR: test_vectorized_ngsim_env (unittest.loader._FailedTest)
-  # Intel MKL FATAL ERROR: Cannot load libmkl_avx2.so or libmkl_def.so
-
-  conda install nomkl numpy scipy scikit-learn numexpr
-  # Found the fix https://stackoverflow.com/questions/36659453/intel-mkl-fatal-error-cannot-load-libmkl-avx2-so-or-libmkl-def-so
-  # Answer by libphy
-  # Then run the test again and it should be fine
+#   # NOTE: If you get the error: 
+#   # ERROR: test_vectorized_ngsim_env (unittest.loader._FailedTest)
+#   # Intel MKL FATAL ERROR: Cannot load libmkl_avx2.so or libmkl_def.so
+#   conda install nomkl numpy scipy scikit-learn numexpr
+#   # found the fix https://stackoverflow.com/questions/36659453/intel-mkl-fatal-error-cannot-load-libmkl-avx2-so-or-libmkl-def-so
+#   # Answer by libphy
+#   # Then run the test again and it should be fine
 
 ```
 
@@ -137,7 +155,7 @@ git clone https://github.com/sisl/hgail.git
 source activate rllab3
 cd hgail
 python setup.py develop
-cd tests python 
+cd tests 
 python runtests.py
 cd ~/ngsim_env
 mkdir data
