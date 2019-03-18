@@ -45,7 +45,16 @@ cd ..
 ```
 
 ## Install julia
-Install julia 1.1. See the internet for instructions. Make sure the `julia` command pops up a julia 1.1 interpreter. More detailed instructions coming later.
+Install julia 1.1. Code snippet assuming you are installing julia to home directory. If not, please 
+modify the path in bashrc step accordingly.
+
+```bash
+wget https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz
+tar -xvf julia-1.1.0-linux-x86_64.tar.gz
+rm julia-1.1.0-linux-x86_64.tar.gz
+echo "export PATH=$(pwd)/julia-1.1.0/bin:$PATH" >> ~/.bashrc
+```
+Make sure the `julia` command pops up a julia 1.1 interpreter.
 
 ## Install ngsim_env
 
