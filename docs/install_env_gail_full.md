@@ -62,7 +62,7 @@ Make sure the `julia` command pops up a julia 1.1 interpreter.
 ```bash
 source activate rllab3
 git clone https://github.com/sisl/ngsim_env.git
-cd ngsim_env.git
+cd ngsim_env
 git checkout 0.7fixes_in_progress
 sudo apt-get install libgtk-3-dev
 #   NOTE: If you do not have sudo access, you can probably get away with not doing this, there just may be an error when adding AutoViz.
