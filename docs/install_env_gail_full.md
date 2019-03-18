@@ -90,6 +90,12 @@ julia
   using PyPlot
   using HDF5
   quit()
+  
+# If using PyPlot errors saying "No module named matplotlib") do the following
+(rllab3)>> conda install matplotlib
+julia
+    using PyCall
+    using PyPlot
 ```
 
 Next, we will get the NGSIM data and run a few tests with julia and python to make sure everything is fine
@@ -120,8 +126,19 @@ cd ~/ngsim_env/julia/test
 julia runtests.jl
 cd ~
 ```
+### Install the imitation learning algorithm gail and test it
+```bash
+# NOTE: One of the tests fails for me across multiple installs. "test_train_domain_matters"
+cd ~
+git clone https://github.com/sisl/hgail.git
+source activate rllab3
+cd hgail
+python setup.py develop
+cd tests 
+python runtests.py
+```
 
-### run python tests
+### Test ngsim_env python stuff
 ```bash
 # install the python components of the package
 source activate rllab3
@@ -148,16 +165,8 @@ python runtests.py
 
 ```
 
-# Installation instructions for the imitation learning algorithm
+# Extract demonstration data from NGSIM
 ```bash
-cd ~
-git clone https://github.com/sisl/hgail.git
-source activate rllab3
-cd hgail
-python setup.py develop
-cd tests 
-python runtests.py
-# NOTE: One of the tests fails for me across multiple installs. "test_train_domain_matters"
 cd ~/ngsim_env
 mkdir data
 mkdir data/trajectories
