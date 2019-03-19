@@ -7,9 +7,11 @@ using JLD2
 using FileIO
 using NGSIM
 using LinearAlgebra
+using PyPlot
 
 import AutoViz: render
 import Base: reset, step
+import Random
 
 # module
 include("make.jl")

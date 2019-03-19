@@ -223,7 +223,7 @@ function sample_multiple_trajdata_vehicle(
         rseed::Union{Nothing, Int} = nothing)
     
     if rseed != nothing
-        srand(rseed)
+        Random.seed!(rseed)
     end
     # if passed in egoid and traj_idx, use those, otherwise, sample
     if egoid == nothing || traj_idx == nothing 

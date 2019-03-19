@@ -119,7 +119,7 @@ Args:
 =#
 function reset(
         env::MultiagentNGSIMEnvVideoMaker,
-        dones::Vector{Bool} = fill!(Vector{Bool}(env.n_veh), true); 
+        dones::Vector{Bool} = fill!(Vector{Bool}(undef, env.n_veh), true); 
         offset::Int=env.H + env.primesteps,
         random_seed::Union{Nothing, Int} = nothing)
     # enforce environment invariant reset property 
@@ -155,7 +155,9 @@ function reset(
 
     # set the ego vehicle
     for (i, egoid) in enumerate(env.egoids)
-        vehidx = findfirst(env.scene, egoid)
+        vehidx = findfirst(egoid,env.scene)
+        #TODO: Check for nothing
+        
         env.ego_vehs[i] = env.scene[vehidx]
     end
     # set the roadway
@@ -178,7 +180,7 @@ Args:
 function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
     # make sure number of actions passed in equals number of vehicles
     @assert size(action, 1) == env.n_veh
-    ego_states = Vector{VehicleState}(env.n_veh)
+    ego_states = Vector{VehicleState}(undef, env.n_veh)
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
         # convert action into form 
@@ -199,14 +201,16 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
     if env.remove_ngsim_veh
         keep_vehicle_subset!(env.scene, env.egoids)
     end
-    orig_vehs = Vector{Vehicle}(env.n_veh)
+    orig_vehs = Vector{Vehicle}(undef, env.n_veh)
 
     for (i, egoid) in enumerate(env.egoids)
 
-	vehidx = findfirst(env.scene, egoid)
+    vehidx = findfirst(egoid, env.scene)
+    # TODO: Check for nothing
 
-        # track the original vehicle for validation / infos purposes
-        orig_vehs[i] = env.scene[vehidx]
+    # track the original vehicle for validation / infos purposes
+    
+    orig_vehs[i] = env.scene[vehidx]
 
 	# replace the original with the controlled vehicle
 
@@ -247,9 +251,9 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
 
     # Raunak adds in original vehicle properties
     step_infos = Dict{String, Vector{Float64}}(
-        "rmse_pos"=>Float64[],
-        "rmse_vel"=>Float64[],
-        "rmse_t"=>Float64[],
+        #"rmse_pos"=>Float64[],
+        #"rmse_vel"=>Float64[],
+        #"rmse_t"=>Float64[],
         "x"=>Float64[],
         "y"=>Float64[],
         "s"=>Float64[],
@@ -261,9 +265,9 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
 	"orig_width"=>Float64[]
     )
     for i in 1:env.n_veh
-        push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
-        push!(step_infos["rmse_vel"], sqrt(abs2((orig_vehs[i].state.v - env.ego_vehs[i].state.v))))
-        push!(step_infos["rmse_t"], sqrt(abs2((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t))))
+        #push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
+        #push!(step_infos["rmse_vel"], sqrt(abs2((orig_vehs[i].state.v - env.ego_vehs[i].state.v))))
+        #push!(step_infos["rmse_t"], sqrt(abs2((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t))))
         push!(step_infos["x"], env.ego_vehs[i].state.posG.x)
         push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
         push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
@@ -360,15 +364,15 @@ function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Arr
 	# Raunak adding list of colliding ego ids into the feature list that gets passed to render
 	if is_colliding==1
 		push!(feature_infos["colliding_veh_ids"],env.ego_vehs[i].id)
-		println("Collision has happened see red")
+		#println("Collision has happened see red")
 	end
 	if is_offroad==1
 		push!(feature_infos["offroad_veh_ids"],env.ego_vehs[i].id)
-		println("Offroad has happened see yellow")
+		#println("Offroad has happened see yellow")
 	end
 	if accel <= accel_thresh
 		push!(feature_infos["hardbrake_veh_ids"],env.ego_vehs[i].id)
-		println("Hard brake has happened see some color")
+		#println("Hard brake has happened see some color")
 	end
     end
     return feature_infos
@@ -379,7 +383,12 @@ function AutoRisk.get_features(env::MultiagentNGSIMEnvVideoMaker)
     for (i, egoid) in enumerate(env.egoids)
 	#println("i=$i\n")
 	#println("egoid = $egoid\n")
-	veh_idx = findfirst(env.scene, egoid)
+    veh_idx = findfirst(egoid, env.scene)
+    
+    # TODO: Check for nothing
+
+
+
 	#println("veh_idx=$veh_idx")
 	pull_features!(env.ext, env.rec, env.roadway, veh_idx)
         env.features[i, :] = deepcopy(env.ext.features)
