@@ -2,19 +2,28 @@
 # They can all be run in parallel. After they are done, we will generate the validation trajectories.
 # There is also the fine tuning step in between.
 
-# RAILS - specify reward augmentation in ngsim_env/julia/AutoEnvs/muliagent_ngsim_env.py, 
+# RAILS - specify reward augmentation in ngsim_env/julia/src/muliagent_ngsim_env.py, 
 #                                        function _extract_rewards()
 # REWARD is something like 4000, or could be more involved like col_off_2000_1000
 REWARD=2000
-# TODO don't forget to change it in the file!!
 
 BASE_NAME="rails_smoothed"
+# smoothing of the rewards is accomplished by smoothing the features. 
+# See julia/src/multiagent_ngsm_inv.py, function _compute_feature_infos()
 
 NUM_ITRS=200
-DECAY=True
-ITRS_PER_DECAY=100
-if [ $DECAY ]; then
+DECAY=False
+ITRS_PER_DECAY=200
+if [ "$DECAY" = True ]; then
     BASE_NAME="${ITRS_PER_DECAY}_decay_${BASE_NAME}"
+    echo $BASE_NAME
+else
+    ITRS_PER_DECAY="$NUM_ITRS" # To be safe, if you don't want to decay, have this == num_itrs
+fi
+
+INFOGAIL=True
+if [ "$INFOGAIL" = True ]; then
+    BASE_NAME="${BASE_NAME}_infogail"
     echo $BASE_NAME
 fi
 
@@ -39,7 +48,7 @@ do
         --n_envs_start $((PARAMS_FOR_CURRICULUM[i]+$N_ENVS_PER)) \
         --n_envs_end $END_CURRICULUM --n_itr $NUM_ITRS \
         --policy_recurrent True --gradient_penalty 2 --discount 0.95 \
-        --env_multiagent True --use_infogail False \
+        --env_multiagent True --use_infogail $INFOGAIL \
         --env_reward $REWARD --decay_reward $DECAY --itrs_per_decay $ITRS_PER_DECAY \
         --load_params_init ${PARAMS_FOR_CURRICULUM[i]} &
     echo "Curriculum policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
@@ -63,7 +72,8 @@ for num in "${MODELS_FOR_FINETUNE[@]}";
 do
     model=${BASE_NAME}_${REWARD}_$num
     python imitate.py --exp_name ${model}_fine --env_multiagent True \
-        --use_infogail False --policy_recurrent True --n_itr $NUM_ITRS --n_envs 100 \
+        --use_infogail $INFOGAIL --policy_recurrent True \
+        --n_itr $NUM_ITRS --n_envs 100 \
         --validator_render False  --batch_size 40000 --gradient_penalty 2 \
         --discount .99 --recurrent_hidden_dim 64 \
         --params_filepath ../../data/experiments/${model}_${PARAMPATH_END} \
