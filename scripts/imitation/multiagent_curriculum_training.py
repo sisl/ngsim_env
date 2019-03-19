@@ -13,12 +13,13 @@ def build_commands(
         n_envs_step,
         exp_dir='../../data/experiments',
         env_reward=0,
-        load_from='NONE'):
+        load_from='NONE',
+        use_infogail="False"):
     # template command to be completed for each individual run
     # (this syntax creates a single string, used for interpretable formatting)
     template = ('python imitate.py '
         '--env_multiagent True '
-        '--use_infogail False '
+        '--use_infogail {} '
         '--exp_name {} '
         '--n_itr {} '
         '--policy_recurrent True '
@@ -41,6 +42,7 @@ def build_commands(
     for n_envs in range(n_envs_start, n_envs_end + n_envs_step, n_envs_step):
         # each command differs only in the experiment name and the params_filepath
         cmd = template.format(
+            use_infogail,
             exp_name.format(n_envs), 
             n_itr_each, 
             n_envs,
@@ -73,6 +75,7 @@ if __name__ == '__main__':
     parser.add_argument('--env_reward', type=int, default=0)
     parser.add_argument('--dry_run', action='store_true', default=False)
     parser.add_argument('--load_params_init', type=str, default='NONE') # if not empty, inserted into first parampath
+    parser.add_argument('--use_infogail', type=str, default='False') 
     args = parser.parse_args()
 
     # build commands
@@ -83,7 +86,8 @@ if __name__ == '__main__':
         args.n_envs_end,
         args.n_envs_step,
         env_reward=args.env_reward,
-        load_from=args.load_params_init
+        load_from=args.load_params_init,
+        use_infogail=args.use_infogail
     )
 
     # run commands
