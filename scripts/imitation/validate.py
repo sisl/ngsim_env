@@ -270,7 +270,7 @@ def collect(
 
 def load_egoids(filename, args, n_runs_per_ego_id=1, env_fn=utils.build_ngsim_env):
     offset = args.env_H + args.env_primesteps
-    basedir = os.path.expanduser('~/.julia/packages/NGSIM/B45UX/data/')
+    basedir = os.path.expanduser('~/.julia/packages/NGSIM/9OYUa/data/')
     ids_filename = filename.replace('.txt', '-index-{}-ids.h5'.format(offset))
     ids_filepath = os.path.join(basedir, ids_filename)
     if not os.path.exists(ids_filepath):

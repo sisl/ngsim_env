@@ -97,7 +97,7 @@ Next, we will get the NGSIM data and run a few tests with julia and python to ma
 ### download NGSIM data
 ```bash
 ##Get the data
-cd ~/.julia/packages/NGSIM/B45UX/data
+cd ~/.julia/packages/NGSIM/9OYUa/data
 wget https://github.com/sisl/NGSIM.jl/releases/download/v1.0.0/data.zip
 unzip data.zip
 # Answer yes to any that ask to be replaced.
