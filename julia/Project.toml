@@ -15,6 +15,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NGSIM = "195157bc-cedd-5875-9ea7-7cfb75f30b3c"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Records = "5984c134-fa48-5ed5-a57f-fc2f6936871f"
 Vec = "44eeaf0b-fee4-471f-9310-ed6585cb3142"
 
