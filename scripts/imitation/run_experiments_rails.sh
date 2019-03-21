@@ -32,7 +32,7 @@ LOG_FILE="logs/${BASE_NAME}_${REWARD}.log"
 start=`date +%s`
 
 MODELS_FOR_CURRICULUM=('1' '2' '3')
-PARAMS_FOR_CURRICULUM=('NONE' 'NONE' 'NONE')                # default is 'NONE', last completed training
+PARAMS_FOR_CURRICULUM=('NONE', 'NONE', 'NONE')                # default is 'NONE', last completed training
 
 N_ENVS_PER=10                               # shouldn't need to change this
 END_CURRICULUM=50                           # End curriculum training with this many envs
@@ -66,8 +66,13 @@ echo "Curriculum - Failed : " $FAIL, time: $(`echo date`) >> $LOG_FILE
 end_curr=`date +%s`
 
 # Now, FINE TUNE
-LAST_DECAY_ITR=$((NUM_ITRS-ITRS_PER_DECAY)) # cumulative number of iterations done on last decay chunk.
-PARAMPATH_END="${END_CURRICULUM}_${LAST_DECAY_ITR}/imitate/log/itr_${ITRS_PER_DECAY}.npz"
+if [ "$DECAY" = True ]; then
+    LAST_DECAY_ITR=$((NUM_ITRS-ITRS_PER_DECAY)) # cumulative number of iterations done on last decay chunk.
+    PARAMPATH_END="${END_CURRICULUM}_${LAST_DECAY_ITR}/imitate/log/itr_${ITRS_PER_DECAY}.npz"
+else
+    PARAMPATH_END="${END_CURRICULUM}/imitate/log/itr_${NUM_ITRS}.npz"
+fi
+
 for num in "${MODELS_FOR_FINETUNE[@]}"; 
 do
     model=${BASE_NAME}_${REWARD}_$num
@@ -95,9 +100,13 @@ end_fine=`date +%s`
 FAIL=0
 for num in "${MODELS_FOR_VALIDATE[@]}"; 
 do
-    model=${BASE_NAME}_${REWARD}_${num}_fine_${LAST_DECAY_ITR}
-    python validate.py --n_proc 7 --exp_dir ../../data/experiments/${model}/ \
-        --params_filename itr_${ITRS_PER_DECAY}.npz --use_multiagent True --random_seed 3 --n_envs 100 &
+    model="${BASE_NAME}_${REWARD}_${num}_fine"
+    if [ "$DECAY" = True ]; then
+        model="${model}_${LAST_DECAY_ITR}"
+    fi
+    python validate.py --n_proc 15 --exp_dir ../../data/experiments/${model}/ \
+        --params_filename itr_${ITRS_PER_DECAY}.npz --use_multiagent True \
+        --random_seed 3 --n_envs 100 &
 
     echo "Validate policy # ${num}, job id $!, time $(`echo date`)" >> $LOG_FILE
     for job in `jobs -p`
