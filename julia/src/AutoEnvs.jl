@@ -8,6 +8,7 @@ using FileIO
 using NGSIM
 using LinearAlgebra
 using Random
+using PyPlot
 
 import AutoViz: render
 import Base: reset, step
