@@ -1,6 +1,8 @@
 
 # NGSIM Env
 - This is a rllab environment for learning human driver models with imitation learning
+
+# Description
 - This repository does not contain a [gail](https://arxiv.org/abs/1606.03476) / [infogail](https://arxiv.org/abs/1703.08840) / hgail implementation
   - The reason ngsim_env does not contain the GAIL algorithm implementation is to enable the codebase to be more modular. This design decision enables ngsim_env to be used as an environment in which any imitation learning algorithm can be tested. Similarly, this design decision enables the GAIL algorithm to be a separate module that can be tested in any environment be that ngsim_env or otherwise. The installation process below gets the GAIL implementation from [sisl/hgail](https://github.com/sisl/hgail)
 - It also does not contain the human driver data you need for the environment to work. The installation process below gets the data from [sisl/NGSIM.jl](https://github.com/sisl/NGSIM.jl).
@@ -44,3 +46,25 @@ python validate.py --n_proc 5 --exp_dir ../../data/experiments/NGSIM-gail/ --par
 
 ### Single agent GAIL (top) and PS-GAIL (bottom) in a multi-agent environment
 ![](media/single_multi_model_2_seed_1.gif)
+
+## References
+---
+If you found this library useful in your research, please consider citing our [paper](https://arxiv.org/abs/1803.01044) and/or 
+[paper](https://arxiv.org/abs/1903.05766):
+```
+@inproceedings{bhattacharyya2018multi,
+  title={Multi-agent imitation learning for driving simulation},
+  author={Bhattacharyya, Raunak P and Phillips, Derek J and Wulfe, Blake and Morton, Jeremy and Kuefler, Alex and Kochenderfer, Mykel J},
+  booktitle={2018 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={1534--1539},
+  year={2018},
+  organization={IEEE}
+}
+
+@article{bhattacharyya2019simulating,
+  title={Simulating Emergent Properties of Human Driving Behavior Using Multi-Agent Reward Augmented Imitation Learning},
+  author={Bhattacharyya, Raunak P and Phillips, Derek J and Liu, Changliu and Gupta, Jayesh K and Driggs-Campbell, Katherine and Kochenderfer, Mykel J},
+  journal={arXiv preprint arXiv:1903.05766},
+  year={2019}
+}
+```
