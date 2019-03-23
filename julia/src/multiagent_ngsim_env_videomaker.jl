@@ -55,7 +55,7 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
             render_params::Dict = Dict("zoom"=>5., "viz_dir"=>"/tmp"))
         param_keys = keys(params)
         @assert in("trajectory_filepaths", param_keys)
-
+	
         # optionally overwrite defaults
         reclength = get(params, "reclength", reclength)
         primesteps = get(params, "primesteps", primesteps)
@@ -438,6 +438,7 @@ function render(
 	carcolors[veh.id] = in(veh.id, env.egoids) ? egocolor : colorant"green"
 	
 	# If the current vehicle is in the list of colliding vehicles color it red
+"""
 	if in(veh.id,infos["colliding_veh_ids"])
 		carcolors[veh.id] = ColorTypes.RGB([1.,0.,0.]...)
 	end
@@ -451,6 +452,7 @@ function render(
 	if in(veh.id,infos["hardbrake_veh_ids"])
 		carcolors[veh.id]=ColorTypes.RGB([0.,1.,1.]...)
 	end
+"""
     end
 
     # define a camera following the ego vehicle
@@ -496,7 +498,7 @@ function render(
         canvas_height=canvas_height,
         canvas_width=canvas_width
     )
-
+"""
     # save the frame 
     if !isdir(env.render_params["viz_dir"])
         mkdir(env.render_params["viz_dir"])
@@ -511,6 +513,8 @@ function render(
     # load and return the frame as an rgb array
     img = PyPlot.imread(filepath)
     return img
+"""
+    return frame
 end
 
 # Raunak trying to add the original vehicle as a ghost car in the video

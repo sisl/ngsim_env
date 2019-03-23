@@ -53,6 +53,7 @@ mutable struct MultiagentNGSIMEnv <: Env
             reward::Int = 0,
             render_params::Dict = Dict("zoom"=>5., "viz_dir"=>"/tmp"))
         param_keys = keys(params)
+	@show params["trajectory_filepaths"]
         @assert in("trajectory_filepaths", param_keys)
 
         # optionally overwrite defaults
@@ -182,7 +183,9 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
         # convert action into form 
-	ego_action = AccelTurnrate(action[i,:]...)
+	#ego_action = AccelTurnrate(action[i,:]...)
+	ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
+	
         # propagate the ego vehicle 
         ego_states[i] = propagate(
             ego_veh, 
@@ -407,6 +410,8 @@ function render(
     )
 #
 #    # save the frame 
+"""
+# Commenting out since we are working with reel
     if !isdir(env.render_params["viz_dir"])
         mkdir(env.render_params["viz_dir"])
     end
@@ -420,5 +425,7 @@ function render(
 #    # load and return the frame as an rgb array
     img = PyPlot.imread(filepath)
     return img
+"""
+    return frame
 end
 #

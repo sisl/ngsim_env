@@ -7,7 +7,7 @@ from julia_env.julia_env import JuliaEnv
 from context_timer import ContextTimer
 
 def perf_ngsim_env_step():
-    basedir = os.path.expanduser('~/.julia/packages/NGSIM/B45UX/data')
+    basedir = os.path.expanduser('~/.julia/packages/NGSIM/9OYUa/data')
     filename = 'trajdata_i101_trajectories-0750am-0805am.txt'
     filepaths = [os.path.join(basedir, filename)]
     env = JuliaEnv(
@@ -27,7 +27,7 @@ def perf_ngsim_env_step():
                 env.reset()
 
 def perf_vectorized_ngsim_env_step():
-    basedir = os.path.expanduser('~/.julia/packages/NGSIM/B45UX/data')
+    basedir = os.path.expanduser('~/.julia/packages/NGSIM/9OYUa/data')
     filename = 'trajdata_i101_trajectories-0750am-0805am.txt'
     filepaths = [os.path.join(basedir, filename)]
     n_envs = 100

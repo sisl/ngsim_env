@@ -151,3 +151,6 @@ scripts/imitation/logs/*
 
 # fuse...
 .fuse*
+
+# vscode
+.vscode/
