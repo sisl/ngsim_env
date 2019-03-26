@@ -1,4 +1,4 @@
-export 
+export
     MultiagentNGSIMEnv,
     reset,
     step,
@@ -9,7 +9,7 @@ export
 
 #=
 Description:
-    Multiagent NGSIM env that plays NGSIM trajectories, allowing a variable 
+    Multiagent NGSIM env that plays NGSIM trajectories, allowing a variable
     number of agents to simultaneously control vehicles in the scene
 =#
 mutable struct MultiagentNGSIMEnv <: Env
@@ -22,7 +22,7 @@ mutable struct MultiagentNGSIMEnv <: Env
     ext::MultiFeatureExtractor
     egoids::Vector{Int} # current ids of relevant ego vehicles
     ego_vehs::Vector{Union{Nothing, Vehicle}} # the ego vehicles
-    traj_idx::Int # current index into trajdatas 
+    traj_idx::Int # current index into trajdatas
     t::Int # current timestep in the trajdata
     h::Int # current maximum horizon for egoid
     H::Int # maximum horizon
@@ -40,7 +40,7 @@ mutable struct MultiagentNGSIMEnv <: Env
     render_params::Dict # rendering options
     infos_cache::Dict # cache for infos intermediate results
     function MultiagentNGSIMEnv(
-            params::Dict; 
+            params::Dict;
             trajdatas::Union{Nothing, Vector{ListRecord}} = nothing,
             trajinfos::Union{Nothing, Vector{Dict}} = nothing,
             roadways::Union{Nothing, Vector{Roadway}} = nothing,
@@ -53,7 +53,6 @@ mutable struct MultiagentNGSIMEnv <: Env
             reward::Int = 0,
             render_params::Dict = Dict("zoom"=>5., "viz_dir"=>"/tmp"))
         param_keys = keys(params)
-	@show params["trajectory_filepaths"]
         @assert in("trajectory_filepaths", param_keys)
 
         # optionally overwrite defaults
@@ -82,20 +81,20 @@ mutable struct MultiagentNGSIMEnv <: Env
         ext = build_feature_extractor(params)
         infos_cache = fill_infos_cache(ext)
         # features are stored in row-major order because they will be transferred
-        # to python; this is inefficient in julia, but don't change or it will 
+        # to python; this is inefficient in julia, but don't change or it will
         # break the python side of the interaction
         features = zeros(n_veh, length(ext))
         egoids = zeros(n_veh)
         ego_vehs = [nothing for _ in 1:n_veh]
         return new(
-            trajdatas, 
-            trajinfos, 
+            trajdatas,
+            trajinfos,
             roadways,
             nothing,
-            scene, 
-            rec, 
-            ext, 
-            egoids, ego_vehs, 0, 0, 0, H, primesteps, Δt, 
+            scene,
+            rec,
+            ext,
+            egoids, ego_vehs, 0, 0, 0, H, primesteps, Δt,
             n_veh, remove_ngsim_veh, features, reward,
             0, render_params, infos_cache
         )
@@ -104,26 +103,26 @@ end
 
 #=
 Description:
-    Reset the environment. Note that this environment maintains the following 
+    Reset the environment. Note that this environment maintains the following
     invariant attribute: at any given point, all vehicles currently being controlled
-    will end their episode at the same time. This simplifies the rest of the code 
-    by enforcing synchronized restarts, but it does somewhat limit the sets of 
-    possible vehicles that can simultaneously interact. With a small enough minimum 
+    will end their episode at the same time. This simplifies the rest of the code
+    by enforcing synchronized restarts, but it does somewhat limit the sets of
+    possible vehicles that can simultaneously interact. With a small enough minimum
     horizon (H <= 250 = 25 seconds) and number of vehicle (n_veh <= 100)
-    this should not be a problem. If you need to run with larger numbers then those 
+    this should not be a problem. If you need to run with larger numbers then those
     implement an environment with asynchronous resets.
 
 Args:
-    - env: env to reset 
-    - dones: bool vector indicating which indices have reached a terminal state 
+    - env: env to reset
+    - dones: bool vector indicating which indices have reached a terminal state
         these must be either all true or all false
 =#
 function reset(
         env::MultiagentNGSIMEnv,
-        dones::Vector{Bool} = fill!(Vector{Bool}(undef, env.n_veh), true); 
+        dones::Vector{Bool} = fill!(Vector{Bool}(undef, env.n_veh), true);
         offset::Int=env.H + env.primesteps,
         random_seed::Union{Nothing, Int} = nothing)
-    # enforce environment invariant reset property 
+    # enforce environment invariant reset property
     # (i.e., always either all true or all false)
     @assert (all(dones) || all(.!dones))
     # first == all at this point, so if first is false, skip the reset
@@ -135,17 +134,17 @@ function reset(
     # as stated above, these will all end at the same timestep
     env.traj_idx, env.egoids, env.t, env.h = sample_multiple_trajdata_vehicle(
         env.n_veh,
-        env.trajinfos, 
+        env.trajinfos,
         offset,
         rseed=random_seed
-    )  
+    )
 
     # update / reset containers
     env.epid += 1
     empty!(env.rec)
     empty!(env.scene)
-    
-    # prime 
+
+    # prime
     for t in env.t:(env.t + env.primesteps)
         get!(env.scene, env.trajdatas[env.traj_idx], t)
         if env.remove_ngsim_veh
@@ -163,10 +162,10 @@ function reset(
     env.roadway = env.roadways[env.traj_idx]
     # env.t is the next timestep to load
     env.t += env.primesteps + 1
-    # enforce a maximum horizon 
+    # enforce a maximum horizon
     env.h = min(env.h, env.t + env.H)
     return get_features(env)
-end 
+end
 
 #=
 Description:
@@ -182,15 +181,14 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
     ego_states = Vector{VehicleState}(undef, env.n_veh)
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
-        # convert action into form 
-	#ego_action = AccelTurnrate(action[i,:]...)
-	ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
-	
-        # propagate the ego vehicle 
+        # convert action into form
+	ego_action = AccelTurnrate(action[i,:]...)
+
+        # propagate the ego vehicle
         ego_states[i] = propagate(
-            ego_veh, 
-            ego_action, 
-            env.roadway, 
+            ego_veh,
+            ego_action,
+            env.roadway,
             env.Δt
         )
         # update the ego_veh
@@ -219,7 +217,7 @@ function _step!(env::MultiagentNGSIMEnv, action::Array{Float64})
         # println("Lane number = $lane4print")
     end
 
-    # update rec with current scene 
+    # update rec with current scene
     update!(env.rec, env.scene)
 
     # Raunak adds in original vehicle properties
@@ -261,24 +259,24 @@ function _extract_rewards(env::MultiagentNGSIMEnv, infos::Dict{String, Array{Flo
         reward_col = infos["is_colliding"][i] * env.reward
         reward_off = infos["is_offroad"][i] * env.reward
         reward_brake = infos["hard_brake"][i] * env.reward * 0.5  # braking hard is not as bad as a collision
-        rewards[i] = -max(reward_col, reward_off, reward_brake) 
+        rewards[i] = -max(reward_col, reward_off, reward_brake)
     end
     return rewards
 end
 
 function Base.step(env::MultiagentNGSIMEnv, action::Array{Float64})
     step_infos = _step!(env, action)
-    
-    # compute features and feature_infos 
+
+    # compute features and feature_infos
     features = get_features(env)
     feature_infos = _compute_feature_infos(env, features)
-    
-    # combine infos 
+
+    # combine infos
     infos = merge(step_infos, feature_infos)
-    
+
     # update env timestep to be the next scene to load
     env.t += 1
-    
+
     # compute terminal
     terminal = env.t > env.h ? true : false
     terminal = [terminal for _ in 1:env.n_veh]
@@ -294,22 +292,22 @@ function _compute_feature_infos(env::MultiagentNGSIMEnv, features::Array{Float64
                                 accel_thresh_min::Float64=-2.0, accel_thresh::Float64=-3.0,
                                 min_d_edge_thresh::Float64=0.5, offroad_thresh::Float64=-0.1)
     feature_infos = Dict{String, Array{Float64}}(
-                "is_colliding"=>Float64[], 
+                "is_colliding"=>Float64[],
                 "is_offroad"=>Float64[],
                 "hard_brake"=>Float64[])
     for i in 1:env.n_veh
         is_colliding = features[i, env.infos_cache["is_colliding_idx"]]
         push!(feature_infos["is_colliding"], is_colliding)
-        
+
         accel = features[i, env.infos_cache["accel_idx"]]
         if accel <= accel_thresh_min
             normalized_accel = abs((accel - accel_thresh_min) / (accel_thresh - accel_thresh_min))
-            # linearly increase penalty up to accel_thresh 
+            # linearly increase penalty up to accel_thresh
             push!(feature_infos["hard_brake"], min(1, normalized_accel))
         else
             push!(feature_infos["hard_brake"], 0)
         end
-        
+
         is_offroad = features[i, env.infos_cache["out_of_lane_idx"]]
         if is_offroad < 1
             d_left = features[i, env.infos_cache["distance_road_edge_left_idx"]]
@@ -353,7 +351,7 @@ num_envs(env::MultiagentNGSIMEnv) = env.n_veh
 
 #=
 Description:
-    Render the scene 
+    Render the scene
 
 Args:
     - env: environment to render
@@ -362,7 +360,7 @@ Returns:
     - img: returns a (height, width, channel) image to display
 =#
 function render(
-        env::MultiagentNGSIMEnv; 
+        env::MultiagentNGSIMEnv;
         egocolor::Vector{Float64}=[0.,0.,1.],
         camtype::String="follow",
         static_camera_pos::Vector{Float64}=[0.,0.],
@@ -387,7 +385,7 @@ function render(
         error("invalid camera type $(camtype)")
     end
     stats = [
-        CarFollowingStatsOverlay(env.egoids[1], 2), 
+        CarFollowingStatsOverlay(env.egoids[1], 2),
         NeighborsOverlay(env.egoids[1], textparams = TextParams(x = 600, y_start=300))
     ]
 
@@ -399,19 +397,18 @@ function render(
 #
 #    # render the frame
     frame = render(
-        env.scene, 
+        env.scene,
         env.roadway,
-        stats, 
+        stats,
         rendermodel = rendermodel,
-        cam = cam, 
+        cam = cam,
         car_colors = carcolors,
         canvas_height=canvas_height,
         canvas_width=canvas_width
     )
 #
-#    # save the frame 
-"""
-# Commenting out since we are working with reel
+#    # save the frame
+
     if !isdir(env.render_params["viz_dir"])
         mkdir(env.render_params["viz_dir"])
     end
@@ -425,7 +422,4 @@ function render(
 #    # load and return the frame as an rgb array
     img = PyPlot.imread(filepath)
     return img
-"""
-    return frame
 end
-#
