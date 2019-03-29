@@ -1,10 +1,17 @@
-"""
-The file that is to be run to execute the tests
-Run using: `julia runtests.jl`
-"""
+# The file that is used to run the tests. `julia runtests.jl`
+
 using Test
-include("admin.jl")
+using Distributions
+using AutomotiveDrivingModels
+include("admin_functions.jl")
 include("driving_functions.jl")
+include("filtering_functions.jl")
+
+@testset "gen_test_particles" begin
+	p_set_dict = gen_test_particles(5)
+	@test length(keys(p_set_dict)) == 2
+	@test length(p_set_dict[:v_des]) == 5
+end
 
 @testset "to_matrix_form" begin
 	num_p = 5
@@ -27,12 +34,6 @@ end
 	@test length(keys(new_p_set_dict))==2
 	@test new_p_set_dict[:v_des][1] == 17.0
 	@test new_p_set_dict[:σ][1] == 0.1
-end
-
-@testset "gen_test_particles" begin
-	p_set_dict = gen_test_particles(5)
-	@test length(keys(p_set_dict)) == 2
-	@test length(p_set_dict[:v_des]) == 5
 end
 
 @testset "init_scene_roadway" begin
@@ -69,4 +70,17 @@ end
 	@test isapprox(hallucinate_a_step(roadway,scene,particle,car_id=1),0.02,atol=0.1)
 	@test isapprox(hallucinate_a_step(roadway,scene,particle,car_id=2),10.02,atol=0.1)
 	@test isapprox(hallucinate_a_step(roadway,scene,particle,car_id=3),20.02,atol=0.15)
+end
+
+@testset "compute_particle_likelihoods" begin
+	num_p = 5
+	p_set_dict = gen_test_particles(num_p)
+	scene,roadway = init_scene_roadway([0.0,10.0,20.0])
+	trupos = hallucinate_a_step(roadway,scene,Dict(:v_des=>25.0,:σ=>0.0),car_id=2)
+	lkhd_vec,p_mat,params = compute_particle_likelihoods(roadway,scene,trupos,p_set_dict,car_id=2)
+
+	@test length(lkhd_vec) == num_p
+	@test length(params) == 2
+	@test size(p_mat)[1] == 2
+	@test size(p_mat)[2] == 5
 end

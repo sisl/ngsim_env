@@ -1,5 +1,3 @@
-using AutomotiveDrivingModels
-
 """
 Helper function for tests: init_scene: 
 Generate a scene and roadway

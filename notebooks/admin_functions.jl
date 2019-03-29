@@ -1,11 +1,4 @@
 """
-These are helper functions called in the tests of
-synthetic_multidim.ipynb notebook
-"""
-
-using Distributions
-
-"""
 gen_test_particles: Helper function for testing stuff. Generates dictionary with
 keys as params and values as array of particles
 """
