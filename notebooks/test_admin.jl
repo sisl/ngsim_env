@@ -1,6 +1,7 @@
-using Test
-include("notebook_utils.jl")
-
+"""
+Tests pertaining to utilities such as conversion to and from dict to matrix form
+"""
+include("admin.jl")
 @testset "to_matrix_form" begin
 	num_p = 5
 	p_set_dict = gen_test_particles(num_p)
@@ -24,7 +25,7 @@ end
 	@test new_p_set_dict[:σ][1] == 0.1
 end
 
-@testset "" begin
+@testset "gen_test_particles" begin
 	p_set_dict = gen_test_particles(5)
 	@test length(keys(p_set_dict)) == 2
 	@test length(p_set_dict[:v_des]) == 5
