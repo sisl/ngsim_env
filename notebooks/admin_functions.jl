@@ -52,3 +52,17 @@ function to_dict_form(params,new_p_mat)
     end
     return new_p_set_dict
 end
+
+"""
+Initialize an array with each element being the associated bucket of particles
+for each car
+
+------Functions called: `gen_test_particles`
+"""
+function init_car_particle_buckets(n_cars,num_particles)
+    array_of_particle_buckets = Array{Dict}(undef,n_cars)
+    for i in 1:n_cars
+        array_of_particle_buckets[i] = gen_test_particles(num_particles)
+    end
+    return array_of_particle_buckets
+end

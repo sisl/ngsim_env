@@ -36,6 +36,12 @@ end
 	@test new_p_set_dict[:σ][1] == 0.1
 end
 
+@testset "init_car_particle_buckets" begin
+	bucket_array = init_car_particle_buckets(3,5)
+	@test length(keys(bucket_array[1])) == 2
+	@test length(bucket_array[2][:σ]) == 5
+end
+
 @testset "init_scene_roadway" begin
 	scene,road = init_scene_roadway([0.,10.,20.,30.],car_vel_array=[0.,10.,20.,0.])
 	@test scene[1].state.posF.s==0.0
@@ -83,4 +89,33 @@ end
 	@test length(params) == 2
 	@test size(p_mat)[1] == 2
 	@test size(p_mat)[2] == 5
+end
+
+@testset "update_p_one_step" begin
+	num_p = 5
+	car_pos = [0.,0.,0.]
+	n_cars = length(car_pos)
+	scene,roadway = init_scene_roadway(car_pos)
+	d1 = Dict(:v_des=>10.0,:σ=>0.);d2 = Dict(:v_des=>10.0,:σ=>0.);d3 = Dict(:v_des=>10.0,:σ=>0.)
+	car_particles = [d1,d2,d3]
+	car_vel_array = [10.,0.,0.]
+	rec = generate_ground_truth(car_pos,car_particles,car_vel_array=car_vel_array,n_steps=100)
+	
+	# Tests the cem approach
+	for i in 1:n_cars
+	    trupos = rec.frames[100].entities[i].state.posF.s
+	    p_set_dict = gen_test_particles(num_p)
+	    p_set_new = update_p_one_step(roadway,scene,trupos,p_set_dict,car_id=i,approach="cem",elite_fraction_percent=60)
+	    @test length(keys(p_set_new)) == 2
+	    @test length(p_set_new[:v_des]) == 5
+	end
+
+	# Test the pf approach
+	for i in 1:n_cars
+	    trupos = rec.frames[100].entities[i].state.posF.s
+	    p_set_dict = gen_test_particles(num_p)
+	    p_set_new = update_p_one_step(roadway,scene,trupos,p_set_dict,car_id=i,approach="cem",elite_fraction_percent=60)
+	    @test length(keys(p_set_new)) == 2
+	    @test length(p_set_new[:v_des]) == 5
+	end
 end

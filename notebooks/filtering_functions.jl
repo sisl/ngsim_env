@@ -32,3 +32,52 @@ function compute_particle_likelihoods(roadway,f,trupos,p_set_dict;car_id=-1)
     end
     return lkhd_vec,p_mat,params
 end
+
+"""
+update_p_one_step: Update particles given one step of true data
+
+------------Arguments that need explanation:
+`p_set_dict` Dictionary with parameters of IDM as keys and associated value as array of particles
+`f` Frame to start hallucination from
+`trupos` Resulting true position starting from frame f
+`approach` Select "pf" or "cem"
+`elite_fraction_percent` Required for the cem method to fit a distribution
+
+------------Other functions called:`compute_particle_likelihoods`
+
+------------Returns:
+`new_p_set_dict` Dictionary with keys as IDM parameters and values as array of particles
+
+-----------NOTES
+- This function updates associated particles over 1 step for one car
+- I think frame and scene can be used as the same thing. Maybe techincally scene is an array
+with each element in that array being a frame.
+- This function will be called by a function that loops over all the cars present in a scene
+"""
+function update_p_one_step(roadway,f,trupos,p_set_dict;
+                            car_id=-1,approach="pf",elite_fraction_percent=20)
+    if car_id==-1 @show "Provide valid car_id" end
+    
+    lkhd_vec,p_mat,params = compute_particle_likelihoods(roadway,f,trupos,p_set_dict,car_id=car_id)
+    
+    num_params = size(p_mat)[1]
+    num_p = size(p_mat)[2]
+    
+    if approach=="pf"
+        p_weight_vec = weights(lkhd_vec./sum(lkhd_vec)) # Convert to weights form to use julia sampling
+        idx = sample(1:num_p,p_weight_vec,num_p)
+        new_p_mat = p_mat[:,idx] #Careful that idx is (size,1) and not (size,2)
+    end
+    
+    if approach=="cem"
+        sortedidx = sortperm(lkhd_vec,rev=true)
+        numtop = convert(Int64,ceil(num_p*elite_fraction_percent/100.0))
+        best_particles = p_mat[:,sortedidx[1:numtop]] # elite selection
+#         @show best_particles
+        p_distribution = fit(MvNormal,best_particles) # fit distb using elites
+        new_p_mat = rand(p_distribution,num_p) # sample num_p new particles from dist
+    end
+    
+    new_p_set_dict = to_dict_form(params,new_p_mat)
+    return new_p_set_dict
+end
