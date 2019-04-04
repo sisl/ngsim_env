@@ -7,6 +7,8 @@ include("admin_functions.jl")
 include("driving_functions.jl")
 include("filtering_functions.jl")
 
+
+#-------------------test_admin_functions-------------------------
 @testset "gen_test_particles" begin
 	p_set_dict = gen_test_particles(5)
 	@test length(keys(p_set_dict)) == 2
@@ -42,6 +44,8 @@ end
 	@test length(bucket_array[2][:σ]) == 5
 end
 
+
+#-------------------test_driving_functions-------------------------
 @testset "init_scene_roadway" begin
 	scene,road = init_scene_roadway([0.,10.,20.,30.],car_vel_array=[0.,10.,20.,0.])
 	@test scene[1].state.posF.s==0.0
@@ -57,6 +61,27 @@ end
 	@test scene[4].state.v == 0.
 end
 
+@testset "init_place_cars" begin
+	pos_vel_array_1 = [(10.,30.),(15.,0.),(20.,0.)]
+	pos_vel_array_2 = [(10.,0.),(15.,0.),(20.,20.)]
+	pos_vel_array_3 = [(15.,0.),(25.,10.),(30.,0.)]
+	lane_place_array = [pos_vel_array_1,pos_vel_array_2,pos_vel_array_3]
+	scene,roadway = init_place_cars(lane_place_array)
+	for i in 1:9
+	    @test scene.entities[i].id == i
+	end
+	for i in 1:3
+	    @test scene.entities[i*3].state.posF.roadind.tag.lane == i
+	end
+	@test scene.entities[1].state.v == 30.
+	@test scene.entities[6].state.v == 20.
+	@test scene.entities[8].state.v == 10.
+	@test scene.entities[1].state.posF.s == 10.
+	@test scene.entities[2].state.posF.s == 15.
+	@test scene.entities[5].state.posF.s == 15.
+	@test scene.entities[8].state.posF.s == 25.
+end
+
 @testset "generate_ground_truth" begin
 	car_pos = [0.,0.,0.]
 	scene,roadway = init_scene_roadway(car_pos) # Not required for test per se but required for rendering
@@ -68,6 +93,23 @@ end
 	rec = generate_ground_truth(car_pos,car_particles,car_vel_array=car_vel_array,n_steps=100)
 	@test isapprox(rec.frames[1].entities[1].state.posF.s,100.0)
 	@test isapprox(rec.frames[1].entities[2].state.posF.s, 81.9,atol=0.1)
+end
+
+@testset "generate_truth_data" begin
+	pos_vel_array_1 = [(0.,10.)]
+	pos_vel_array_2 = [(0.,0.)]
+	pos_vel_array_3 = [(0.,0.),(10.,10.)]
+	lane_place_array = [pos_vel_array_1,pos_vel_array_2,pos_vel_array_3]
+	scene,roadway = init_place_cars(lane_place_array)
+	d1 = Dict(:v_des=>10.0,:σ=>0.);d2 = Dict(:v_des=>10.0,:σ=>0.)
+	d3 = Dict(:v_des=>10.0,:σ=>0.);d4 = Dict(:v_des=>10.0,:σ=>0.)
+	car_particle_array = [d1,d2,d3,d4]
+
+	rec = generate_truth_data(lane_place_array,car_particle_array)
+	@test isapprox(rec.frames[1].entities[1].state.posF.s,100.0,atol=0.1)
+	@test isapprox(rec.frames[1].entities[2].state.posF.s, 81.9,atol=0.1)
+	@test isapprox(rec.frames[1].entities[3].state.posF.s, 72.2,atol=0.1)
+	@test isapprox(rec.frames[1].entities[4].state.posF.s, 110.0,atol=0.1)
 end
 
 @testset "hallucinate_a_step" begin	
@@ -86,6 +128,7 @@ end
 	end
 end
 
+#-------------------test_filtering_functions-------------------------
 @testset "compute_particle_likelihoods" begin
 	
 	v_array = [10.,15.,20.,25.,30.]

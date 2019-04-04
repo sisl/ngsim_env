@@ -1,6 +1,11 @@
 """
 compute_particle_likelihoods: Loop over the particles and score each of them
 
+------Idea------------
+Compute the likelihood of the true position under a gaussian distribution
+centered at the hallucinated position and with standard deviation given
+according to the particle sigma parameter
+
 -----Other functions called: `to_matrix_form`,`hallucinate_a_step`
 """
 function compute_particle_likelihoods(roadway,f,trupos,p_set_dict;car_id=-1)
@@ -34,6 +39,17 @@ end
 
 """
 update_p_one_step: Update particles given one step of true data
+- This function updates associated particles over 1 step for one car
+- This function will be called by a function that loops over all the cars present in a scene
+
+--------------Idea flow---------------
+PF:
+Compute particle likelihoods->assign weights to particles, higher likelihood higher the weight
+->resample particles according the the weight
+
+CEM:
+Compute particle likelihoods->sort particles by highest to lowest likelihood->
+select elites->fit a new distribution using these elites->sample new particles
 
 ------------Arguments that need explanation:
 `p_set_dict` Dictionary with parameters of IDM as keys and associated value as array of particles
@@ -46,12 +62,6 @@ update_p_one_step: Update particles given one step of true data
 
 ------------Returns:
 `new_p_set_dict` Dictionary with keys as IDM parameters and values as array of particles
-
------------NOTES
-- This function updates associated particles over 1 step for one car
-- I think frame and scene can be used as the same thing. Maybe techincally scene is an array
-with each element in that array being a frame.
-- This function will be called by a function that loops over all the cars present in a scene
 """
 function update_p_one_step(roadway,f,trupos,p_set_dict;
                             car_id=-1,approach="pf",elite_fraction_percent=20)

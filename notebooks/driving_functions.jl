@@ -2,6 +2,8 @@
 Helper function for tests: init_scene: 
 Generate a scene and roadway
 Place car lanewise starting with lane 1 (rightmost)
+Used for the 5 car side by side scenario. Cant be used for cars in the same lane 
+i.e. interacting cars scenario
 -----Arguments
 `car_pos_array` Array with initial position of each car. Car i will be placed in lane i at that position
 `car_vel_array` Array with initial velocities. Defaults to 0 velocities
@@ -21,6 +23,36 @@ function init_scene_roadway(car_pos_array;car_vel_array=[],road_length=1000.0,nu
     end
 
     return scene, roadway
+end
+
+"""
+init_place_cars: Initializes a scene more generic than init_scene_roadway
+init_scene_roadway would go element by element for input array and place each
+car in a new lane. Was not possible to use that to place cars in the same lane
+
+--------Arguments:
+lane_place_array: Every element corresponds to a new lane starting
+from lane1. Every element is an array. The number of elements in this
+array is the number of cars in the same lane. Every element is a tuple.
+Each tuple contains pos,vel for the car
+"""
+function init_place_cars(lane_place_array;road_length = 1000.0)
+    num_lanes = length(lane_place_array)
+    roadway = gen_straight_roadway(num_lanes,road_length)
+    scene = Scene()
+
+    id = 1
+    for i in 1:num_lanes
+        for j in 1:length(lane_place_array[i])
+            veh_state = VehicleState(Frenet(roadway[LaneTag(1,i)],
+                    lane_place_array[i][j][1]),roadway,
+                lane_place_array[i][j][2])
+            veh = Vehicle(veh_state,VehicleDef(),id)
+            push!(scene,veh)
+            id+=1
+        end
+    end
+    return scene,roadway
 end
 
 """
@@ -46,6 +78,32 @@ function generate_ground_truth(car_pos_array,car_particle_array;car_vel_array = 
         models[i] = IntelligentDriverModel(;car_particle_array[i]...)
     end
     
+    rec = SceneRecord(n_steps, dt)
+    simulate!(rec, scene, roadway, models, n_steps)
+    return rec
+end
+
+"""
+generate_truth_data: Ground truth generation function to work with init_place_array
+
+- generate_ground_truth would work with init_scene_roadway which was not as generic as
+the init_place_array because it allows placing multiple cars in the same lane
+
+--------Arguments:
+`lane_place_array`: Is the lane_place_array that is used with the init_place_cars
+function
+`car_particle_array`: Is the partiucles array that would need to make the
+"""
+function generate_truth_data(lane_place_array,car_particle_array,n_steps=100,dt=0.1)
+    scene,roadway = init_place_cars(lane_place_array)
+    n_cars = length(car_particle_array)
+    models = Dict{Int, DriverModel}()
+    
+    # Create driver models for all the cars in the scene
+    for i in 1:n_cars
+        models[i] = IntelligentDriverModel(;car_particle_array[i]...)
+    end
+    n_steps = 100;dt=0.1
     rec = SceneRecord(n_steps, dt)
     simulate!(rec, scene, roadway, models, n_steps)
     return rec
