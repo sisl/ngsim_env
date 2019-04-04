@@ -70,25 +70,38 @@ end
 	@test isapprox(rec.frames[1].entities[2].state.posF.s, 81.9,atol=0.1)
 end
 
-@testset "hallucinate_a_step" begin
+@testset "hallucinate_a_step" begin	
+	# Run for multiple CARS	
 	scene,roadway = init_scene_roadway([0.0,10.0,20.0])
 	particle = Dict(:v_des=>25.0,:σ=>0.5)
 	@test isapprox(hallucinate_a_step(roadway,scene,particle,car_id=1),0.02,atol=0.1)
 	@test isapprox(hallucinate_a_step(roadway,scene,particle,car_id=2),10.02,atol=0.1)
 	@test isapprox(hallucinate_a_step(roadway,scene,particle,car_id=3),20.02,atol=0.15)
+
+	# Run for multiple PARTICLES
+	scene,roadway = init_scene_roadway([0.0,10.0,20.0])
+	for i in 1:5
+		particle = Dict(:v_des=>25.0,:σ=>0.5)
+		@test isapprox(hallucinate_a_step(roadway,scene,particle,car_id=1),0.02,atol=0.1)
+	end
 end
 
 @testset "compute_particle_likelihoods" begin
-	num_p = 5
-	p_set_dict = gen_test_particles(num_p)
-	scene,roadway = init_scene_roadway([0.0,10.0,20.0])
-	trupos = hallucinate_a_step(roadway,scene,Dict(:v_des=>25.0,:σ=>0.0),car_id=2)
-	lkhd_vec,p_mat,params = compute_particle_likelihoods(roadway,scene,trupos,p_set_dict,car_id=2)
+	
+	v_array = [10.,15.,20.,25.,30.]
+	num_p = length(v_array)
+	sig_array = [0.1,0.1,0.1,0.1,0.1]	
+	p_set_dict = Dict(:v_des=>v_array,:σ=>sig_array)
+	scene,roadway = init_scene_roadway([0.0])
+	trupos = hallucinate_a_step(roadway,scene,Dict(:v_des=>25.0,:σ=>0.0),car_id=1)
+	lkhd_vec,p_mat,params = compute_particle_likelihoods(roadway,scene,trupos,p_set_dict,car_id=1)
 
 	@test length(lkhd_vec) == num_p
 	@test length(params) == 2
 	@test size(p_mat)[1] == 2
 	@test size(p_mat)[2] == 5
+	@test any(isnan,lkhd_vec) == false #Gets triggered when wrong car_id called
+	# For example only 1 car on road but you say car_id = 2
 end
 
 @testset "update_p_one_step" begin

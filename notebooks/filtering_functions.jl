@@ -27,7 +27,6 @@ function compute_particle_likelihoods(roadway,f,trupos,p_set_dict;car_id=-1)
         std_dev_pos = timestep*timestep*std_dev_acc
             
         hpos = hallucinate_a_step(roadway,f,p_dict,car_id=car_id)
-        
         lkhd_vec[i] = pdf(Normal(hpos,std_dev_pos),trupos[1])
     end
     return lkhd_vec,p_mat,params

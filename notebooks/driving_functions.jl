@@ -67,3 +67,45 @@ driving with IDM(v_des = 10). They don't matter in the particle update of the ca
 - We return only the position of the car along the lane. We don't even return which lane it is
 in information. In the future, we want to return 2D position and measure 2D likelihood value somehow
 """
+function hallucinate_a_step(roadway,scene_input,particle;car_id=-1)
+    if car_id==-1 @show "Please give valid car_id" end
+    
+    # Hope is that scene_input does not get modified doing the simulate
+    # Extremely crucial step. Not doing the deepcopy was the problem
+    # scene was being propagated forward and therefore for every other
+    # candidate particle, the hallucination was starting from hallucinated scene
+    # resulting from previous particle
+    scene = deepcopy(scene_input)
+    #scene = scene_input # This was the failure case
+    n_cars = scene.n 
+
+    models = Dict{Int, DriverModel}()
+    
+    # Create driver models for all the cars in the scene
+    for i in 1:n_cars
+        if i == car_id
+            models[i] = IntelligentDriverModel(;particle...)
+        else
+            # TODO: RESEARCH QUESTION: What drives the other vehicles in the hallucination
+            models[i] = IntelligentDriverModel(v_des=10.0)
+        end
+    end
+    
+    n_steps = 1
+    dt = 0.1
+    rec = SceneRecord(n_steps, dt)
+    
+    simulate!(rec, scene, roadway, models, n_steps)
+    
+    X = Array{Float64}(undef,n_steps, 1)
+
+    for t in 1:n_steps
+        f = rec.frames[n_steps - t + 1]
+        
+        for c in car_id:car_id
+            s = f.entities[c].state.posF
+            X[t, 1] = s.s #position
+        end
+    end
+    return X[1]
+end
