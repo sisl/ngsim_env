@@ -2,11 +2,31 @@
 gen_test_particles: Helper function for testing stuff. Generates dictionary with
 keys as params and values as array of particles
 """
-function gen_test_particles(num_p)
+function gen_test_particles(num_p::Int64)
     # start:step:end and number of particles are the inputs to sample
     v_particles = sample(10.0:1.0:30.0,num_p)
     sig_particles = sample(0.1:0.1:1.0,num_p)
     p_set_dict = Dict(:v_des=>v_particles,:σ=>sig_particles)
+    return p_set_dict
+end
+
+"""
+initialize_particles: A more general particle initializer than `gen_test_particles
+`gen_test_particles` was hard coded to work only with `v_des` and `sigma`.
+Also had hard coded range to sample from
+
+------Args that need explanation:
+`input`: Array with each element corresponding to a different parameter.
+Each element is a tuple with 4 elements. These are
+symbol with param name, start value to sample from, step, end value to sample
+
+"""
+function initialize_particles(input::Array,num_particles::Int64)
+    p_set_dict = Dict{Symbol,Array}()
+    for i in 1:length(input)
+        p_set_dict[input[i][1]] = sample(input[i][2]:input[i][3]:input[i][4],
+            num_particles)
+    end
     return p_set_dict
 end
 
@@ -59,10 +79,24 @@ for each car
 
 ------Functions called: `gen_test_particles`
 """
-function init_car_particle_buckets(n_cars,num_particles)
+function init_car_particle_buckets(n_cars::Int64,num_particles::Int64)
     array_of_particle_buckets = Array{Dict}(undef,n_cars)
     for i in 1:n_cars
         array_of_particle_buckets[i] = gen_test_particles(num_particles)
+    end
+    return array_of_particle_buckets
+end
+
+"""
+	initialize_carwise_particle_buckets(n_cars::Int64,num_particles::Int64)
+
+More general particle buckets initialization associated with every car.
+`init_car_particle_buckets` used `gen_test_particles` and hence was limited
+"""
+function initialize_carwise_particle_buckets(n_cars::Int64,num_particles::Int64,input::Array)
+    array_of_particle_buckets = Array{Dict}(undef,n_cars)
+    for i in 1:n_cars
+        array_of_particle_buckets[i] = initialize_particles(input,num_particles)
     end
     return array_of_particle_buckets
 end

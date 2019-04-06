@@ -93,6 +93,10 @@ the init_place_array because it allows placing multiple cars in the same lane
 `lane_place_array`: Is the lane_place_array that is used with the init_place_cars
 function
 `car_particle_array`: Is the partiucles array that would need to make the
+
+--------Other function called: `init_place_cars`
+
+------Returns: scenerecord which is an array that contains the frames through the traj
 """
 function generate_truth_data(lane_place_array,car_particle_array,n_steps=100,dt=0.1)
     scene,roadway = init_place_cars(lane_place_array)

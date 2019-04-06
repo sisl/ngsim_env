@@ -7,12 +7,18 @@ include("admin_functions.jl")
 include("driving_functions.jl")
 include("filtering_functions.jl")
 
-
 #-------------------test_admin_functions-------------------------
 @testset "gen_test_particles" begin
 	p_set_dict = gen_test_particles(5)
 	@test length(keys(p_set_dict)) == 2
 	@test length(p_set_dict[:v_des]) == 5
+end
+
+@testset "initialize_particles" begin
+	input = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.),(:T,0.1,0.1,5.)]
+	p = initialize_particles(input,5)
+	@test length(keys(p)) == 3
+	@test length(p[:v_des]) == 5
 end
 
 @testset "to_matrix_form" begin
@@ -44,6 +50,12 @@ end
 	@test length(bucket_array[2][:σ]) == 5
 end
 
+@testset "initialize_carwise_particle_buckets" begin
+	input = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.),(:T,0.1,0.1,5.)]
+	bucket_array = initialize_carwise_particle_buckets(3,5,input)
+	@test length(keys(bucket_array[1])) == 3
+	@test length(bucket_array[2][:σ]) == 5
+end
 
 #-------------------test_driving_functions-------------------------
 @testset "init_scene_roadway" begin
@@ -125,6 +137,27 @@ end
 	for i in 1:5
 		particle = Dict(:v_des=>25.0,:σ=>0.5)
 		@test isapprox(hallucinate_a_step(roadway,scene,particle,car_id=1),0.02,atol=0.1)
+	end
+
+	# Hallucinate using the new way of car particle bucket generation i.e more than 2 params
+	scene,roadway = init_scene_roadway([0.])
+	input = [(:T,0.1,0.1,10.),(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.)]
+	bucket_array = initialize_carwise_particle_buckets(1,5,input)
+		
+	for i in 1:length(bucket_array)
+		p_set_dict = bucket_array[i]
+		p_mat, params, vec_val_vec = to_matrix_form(p_set_dict)
+		num_params=size(p_mat)[1]
+		num_p = size(p_mat)[2]		
+		for i in 1:num_p
+			# Create dict version for a single particle
+        		p_dict = Dict()
+	        	for j in 1:num_params
+        		    p_dict[params[j]]=vec_val_vec[j][i]
+        		end
+	
+			hallucinate_a_step(roadway,scene,p_dict,car_id=1)
+		end
 	end
 end
 
