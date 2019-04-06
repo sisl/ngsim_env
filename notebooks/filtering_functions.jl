@@ -90,3 +90,47 @@ function update_p_one_step(roadway,f,trupos,p_set_dict;
     new_p_set_dict = to_dict_form(params,new_p_mat)
     return new_p_set_dict
 end
+
+"""
+    filter_particles_over_trajectory(num_particles::Int64,num_cars::Int64,lane_place_array::Array,
+        car_particles::Array,particle_props::Array;approach="pf")
+
+Runs particle filtering over an entire trajectory of provided ground truth data.
+Places cars on road, generates truth traj using provided true parameter values, generates bucket with candidate
+particles for each car, runs particle filtering over the entire trajectory and outputs estimated parameters
+
+# Arguments
+- `lane_place_array::Array`: Every element corresponds to a new lane starting
+from lane1. Every element is an array. The number of elements in this
+array is the number of cars in the same lane. Every element is a tuple.
+Each tuple contains pos,vel for the car
+- `car_particles::Array`: Array with each element being a dictionary with true particle corresponding
+to car_id equivalent to that index
+- `particle_props`: Array with each element corresponding to a different parameter.
+Each element is a tuple with 4 elements. These are
+symbol with param name, start value to sample from, step, end value to sample
+- `approach = "pf"`: The filtering approach to be used. Allows "pf" and "cem"
+"""
+function filter_particles_over_trajectory(num_particles::Int64,num_cars::Int64,lane_place_array::Array,
+        car_particles::Array,particle_props::Array;approach="pf")
+    scene,roadway = init_place_cars(lane_place_array)
+    rec = generate_truth_data(lane_place_array,car_particles)
+    f_end_num = length(rec.frames)
+    
+    bucket_array = initialize_carwise_particle_buckets(n_cars,num_p,particle_props)
+    for t in 1:f_end_num-1
+        if t%10==0 @show t end
+        f = rec.frames[f_end_num - t + 1]
+
+        for car_id in 1:n_cars
+            old_p_set_dict = bucket_array[car_id]
+            trupos = rec.frames[f_end_num-t].entities[car_id].state.posF.s
+            new_p_set_dict = update_p_one_step(roadway,f,trupos,old_p_set_dict,
+                car_id=car_id,approach=approach)
+            bucket_array[car_id] = new_p_set_dict
+        end
+    end  
+    #@show fit(MvNormal,old_p_mat) # Don't work because all elements identical
+    print_buckets_mean(bucket_array)
+    # @show bucket_array
+end

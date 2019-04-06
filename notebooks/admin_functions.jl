@@ -20,6 +20,10 @@ Also had hard coded range to sample from
 Each element is a tuple with 4 elements. These are
 symbol with param name, start value to sample from, step, end value to sample
 
+--------Returns:
+- `p_set_dict` A dictionary with keys as parameters and values as arrays with each
+element being a different particle
+
 """
 function initialize_particles(input::Array,num_particles::Int64)
     p_set_dict = Dict{Symbol,Array}()
@@ -99,4 +103,25 @@ function initialize_carwise_particle_buckets(n_cars::Int64,num_particles::Int64,
         array_of_particle_buckets[i] = initialize_particles(input,num_particles)
     end
     return array_of_particle_buckets
+end
+
+"""
+	print_buckets_mean(bucket_array::Array)
+
+Print the mean particle values carwise i.e. car1 printed in first row, car 2 in second
+Each element is printed as an array with the mean values as the elements
+
+---------Argument
+- `bucket_array` This is an array with each element being a dictionary.
+This dictionary has key as parameters of IDM and values as array. Each element in this
+array is a different particle
+"""
+function print_buckets_mean(bucket_array::Array)
+    for i in 1:length(bucket_array)
+        params = []
+        for (k,v) in bucket_array[i]
+            push!(params,mean(v))
+        end
+        @show params
+    end
 end
