@@ -208,13 +208,3 @@ end
 	    @test length(p_set_new[:v_des]) == 5
 	end
 end
-
-# Temporarily keeping here for running filtering over trajectory
-num_particles = 100
-pos_vel_array_1 = [(30.,15.),(10.,15.)]
-lane_place_array = [pos_vel_array_1]
-num_cars = 2
-d1 = Dict(:v_des=>20.0,:σ=>0.1);d2 = Dict(:v_des=>10.0,:σ=>0.1)
-car_particles = [d1,d2]
-particle_props = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.)]
-filter_trajectory(num_particles,num_cars,lane_place_array,car_particle_array,particle_props,approach="pf")

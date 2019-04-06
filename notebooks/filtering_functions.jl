@@ -100,6 +100,8 @@ Places cars on road, generates truth traj using provided true parameter values, 
 particles for each car, runs particle filtering over the entire trajectory and outputs estimated parameters
 
 # Arguments
+- `num_p`: Number of particles associated with each car i.e. every car has an associated 
+particle bucket with num_p number of particles
 - `lane_place_array::Array`: Every element corresponds to a new lane starting
 from lane1. Every element is an array. The number of elements in this
 array is the number of cars in the same lane. Every element is a tuple.
@@ -111,7 +113,7 @@ Each element is a tuple with 4 elements. These are
 symbol with param name, start value to sample from, step, end value to sample
 - `approach = "pf"`: The filtering approach to be used. Allows "pf" and "cem"
 """
-function filter_particles_over_trajectory(num_particles::Int64,num_cars::Int64,lane_place_array::Array,
+function filter_particles_over_trajectory(num_p::Int64,n_cars::Int64,lane_place_array::Array,
         car_particles::Array,particle_props::Array;approach="pf")
     scene,roadway = init_place_cars(lane_place_array)
     rec = generate_truth_data(lane_place_array,car_particles)
