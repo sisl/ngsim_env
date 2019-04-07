@@ -121,7 +121,7 @@ function filter_particles_over_trajectory(num_p::Int64,n_cars::Int64,lane_place_
     
     bucket_array = initialize_carwise_particle_buckets(n_cars,num_p,particle_props)
     for t in 1:f_end_num-1
-        if t%10==0 @show t end
+        #if t%10==0 @show t end
         f = rec.frames[f_end_num - t + 1]
 
         for car_id in 1:n_cars
@@ -132,7 +132,5 @@ function filter_particles_over_trajectory(num_p::Int64,n_cars::Int64,lane_place_
             bucket_array[car_id] = new_p_set_dict
         end
     end  
-    #@show fit(MvNormal,old_p_mat) # Don't work because all elements identical
-    print_buckets_mean(bucket_array)
-    # @show bucket_array
+    return bucket_array
 end

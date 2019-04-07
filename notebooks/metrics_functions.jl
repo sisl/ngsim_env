@@ -1,0 +1,35 @@
+"""
+    calc_rmse_pos(truerec::QueueRecord,simrec::QueueRecord;num_cars=-1)
+
+Calculate the RMSE in position between two QueueRecords i.e. what you get after running
+simulate. Use case is that truerec is the ground truth trajectory and the other is the
+trajectory you get after running with the estimated IDM parameters
+
+# Returns
+- `rmse_pos::Array`: An array with the rmse_pos indexed by time
+"""
+function calc_rmse_pos(truerec,simrec;num_cars=-1)
+    @assert num_cars != -1
+    n_frames = length(truerec.frames)
+    @assert length(truerec.frames) == length(simrec.frames)
+    
+    n_steps = length(truerec.frames)
+
+    X = Array{Float64}(undef,n_steps, 1)
+    rmse_pos = Array{Float64}(undef,n_steps,1)
+    for t in 1:n_steps
+        truef = truerec.frames[n_steps - t + 1]
+        simf = simrec.frames[n_steps - t + 1]
+
+        temp_square_error = 0
+        for c in 1:num_cars
+            trues = truef.entities[c].state.posF.s
+            sims = simf.entities[c].state.posF.s
+
+            temp_square_error += sqrt(abs2(trues-sims))
+    #         @show temp_square_error
+        end
+        rmse_pos[t] = temp_square_error/num_cars
+    end
+    return rmse_pos
+end
