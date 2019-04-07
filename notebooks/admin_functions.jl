@@ -125,3 +125,38 @@ function print_buckets_mean(bucket_array::Array)
         @show params
     end
 end
+
+"""
+    find_mean_particle(p_set_dict::Dict)
+
+# Arguments
+- `p_set_dict`: Key is the parameter name. Value is an array containing all the particles
+
+# Returns
+- `mean_particle`: Is a dict with key as parameter name and value as the mean of all particles
+"""
+function find_mean_particle(p_set_dict::Dict)
+    mean_particle = Dict()
+    for (k,v) in p_set_dict
+        mean_particle[k] = mean(v)
+    end
+    return mean_particle
+end
+
+"""
+    particle_difference(trueparticle::Dict,particle::Dict)
+Find Euclidean distance between two dictionaries having same keys
+
+# Returns
+norm of the vector created by the difference between corresponding keys of the
+two dictionaries i.e. same parameters of true particle and our candidate particle
+"""
+function particle_difference(trueparticle::Dict,particle::Dict)
+    @assert keys(trueparticle)==keys(particle)
+    
+    # Create a dictinary with same keys as input dicts but value as diff between
+    diff_particle = merge(-,trueparticle,particle)
+    
+    # Find the norm of the vector containing these diff values
+    return norm(collect(values(diff_particle)))
+end

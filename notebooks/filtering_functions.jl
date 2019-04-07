@@ -95,7 +95,7 @@ end
     filter_particles_over_trajectory(num_particles::Int64,num_cars::Int64,lane_place_array::Array,
         car_particles::Array,particle_props::Array;approach="pf")
 
-Runs particle filtering over an entire trajectory of provided ground truth data.
+Runs particle filtering over an entire trajectory.
 Places cars on road, generates truth traj using provided true parameter values, generates bucket with candidate
 particles for each car, runs particle filtering over the entire trajectory and outputs estimated parameters
 

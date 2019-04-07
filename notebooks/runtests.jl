@@ -3,6 +3,7 @@
 using Test
 using Distributions
 using AutomotiveDrivingModels
+using LinearAlgebra
 include("admin_functions.jl")
 include("driving_functions.jl")
 include("filtering_functions.jl")
@@ -58,6 +59,24 @@ end
 	@test length(bucket_array[2][:σ]) == 5
 end
 
+@testset "find_mean_particle" begin
+	p_set_dict = Dict(:v_des=>[10,20,30,40],:sigma=>[0.1,0.2,0.3,0.4])
+	mean_p = find_mean_particle(p_set_dict)
+	@test mean_p[:v_des] == 25.0
+	@test mean_p[:sigma] == 0.25
+end
+
+@testset "particle_difference" begin
+	A = Dict(:T=>0.4,:v_des => 20.)
+	B = Dict(:v_des => 20., :T=>0.4)
+	@test particle_difference(A,B) == 0.
+	
+	# Would like to be able to test something like this
+	# Should throw an error as keys aren't the same for both dicts
+	#A = Dict(:T=>0.4,:v_des => 20.)
+	#B = Dict(:v_des => 20., :p=>0.4)
+	#@test_throws ErrorException particle_difference(A,B) == 0.
+end
 #-------------------test_driving_functions-------------------------
 @testset "init_scene_roadway" begin
 	scene,road = init_scene_roadway([0.,10.,20.,30.],car_vel_array=[0.,10.,20.,0.])
@@ -181,6 +200,7 @@ end
 	# For example only 1 car on road but you say car_id = 2
 end
 
+# Occasionally fails saying Cholesky factorization failes
 @testset "update_p_one_step" begin
 	num_p = 5
 	car_pos = [0.,0.,0.]
