@@ -33,3 +33,21 @@ function calc_rmse_pos(truerec,simrec;num_cars=-1)
     end
     return rmse_pos
 end
+
+"""
+    particle_difference(trueparticle::Dict,particle::Dict)
+Find Euclidean distance between two dictionaries having same keys
+
+# Returns
+norm of the vector created by the difference between corresponding keys of the
+two dictionaries i.e. same parameters of true particle and our candidate particle
+"""
+function particle_difference(trueparticle::Dict,particle::Dict)
+    @assert keys(trueparticle)==keys(particle)
+    
+    # Create a dictinary with same keys as input dicts but value as diff between
+    diff_particle = merge(-,trueparticle,particle)
+    
+    # Find the norm of the vector containing these diff values
+    return norm(collect(values(diff_particle)))
+end

@@ -134,3 +134,84 @@ function filter_particles_over_trajectory(num_p::Int64,n_cars::Int64,lane_place_
     end  
     return bucket_array
 end
+
+"""
+    capture_filtering_progress(num_p::Int64,n_cars::Int64,lane_place_array::Array,
+        car_particles::Array,particle_props::Array;approach="pf")
+
+Track the particle filters progress as it sees more steps of the truth trajectory
+
+- There are n cars
+- Every car has 100 particles
+- Every particle has 2 parameters
+- Find a mean particle i.e. with v_des as mean of the population, sigma as mean of the population
+- See how far it is from the true parameter of the associated car
+    - Suppose true vector [v_des_true, sigma_true] and mean particle vector [v_des_mean,sigma_mean]
+    - Then this is the norm(true vector - mean particle vector)
+- Take the mean of this norm over all the cars
+
+# Arguments
+- `num_p`: Number of particles associated with each car i.e. every car has an associated 
+particle bucket with num_p number of particles
+- `lane_place_array::Array`: Every element corresponds to a new lane starting
+from lane1. Every element is an array. The number of elements in this
+array is the number of cars in the same lane. Every element is a tuple.
+Each tuple contains pos,vel for the car
+- `car_particles::Array`: Array with each element being a dictionary with true particle corresponding
+to car_id equivalent to that index
+- `particle_props`: Array with each element corresponding to a different parameter.
+Each element is a tuple with 4 elements. These are
+symbol with param name, start value to sample from, step, end value to sample
+- `approach = "pf"`: The filtering approach to be used. Allows "pf" and "cem"
+
+# Returns
+- `mean_particle_error::Array`: 
+Each element corresponds to error at that timestep in the trajectory.
+Each element is calculated as follows
+- For every car:	
+	- Find mean particle from the bucket of particles
+	- Find its error with respect to true particle. This error is the 
+Euclidean distance between the parameters of mean particle and true particle
+- Take the average of this quantity over all the cars present in the scene
+"""
+function capture_filtering_progress(num_p::Int64,n_cars::Int64,lane_place_array::Array,
+        car_particles::Array,particle_props::Array;approach="pf")
+    scene,roadway = init_place_cars(lane_place_array)
+    rec = generate_truth_data(lane_place_array,car_particles)
+    f_end_num = length(rec.frames)
+    
+    bucket_array = initialize_carwise_particle_buckets(n_cars,num_p,particle_props)
+    
+    # Particle error at a timestep averaged over cars in the scene
+    # at that timestep
+    mean_particle_error = Array{Float64}(undef,f_end_num-1,1)
+    
+    # Loop over all the frames in the ground truth trajectory
+    for t in 1:f_end_num-1
+        #if t%10==0 @show t end
+        f = rec.frames[f_end_num - t + 1]
+
+        particle_error_carwise = Array{Float64}(undef,n_cars,1)
+       
+        # Loop over cars in the scene
+        for car_id in 1:n_cars
+            old_p_set_dict = bucket_array[car_id]
+            trupos = rec.frames[f_end_num-t].entities[car_id].state.posF.s
+            new_p_set_dict = update_p_one_step(roadway,f,trupos,old_p_set_dict,
+                car_id=car_id,approach=approach)
+            bucket_array[car_id] = new_p_set_dict
+            
+            # Find the mean particle from all the particles in the bucket
+            mean_particle = find_mean_particle(new_p_set_dict)
+            true_particle = car_particles[car_id]
+            
+            # Find the Euclidean distance between the true particle value
+            # and the mean particle in the current bucket of particles
+            particle_error_carwise[car_id] = particle_difference(true_particle,mean_particle)
+        end
+        
+        # Take the mean over all the cars in the scene
+        mean_particle_error[t] = mean(particle_error_carwise)
+    end
+    return mean_particle_error
+end

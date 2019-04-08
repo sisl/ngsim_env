@@ -1,9 +1,10 @@
 # The file that is used to run the tests. `julia runtests.jl`
 
-using Test
+using Test # @test function
 using Distributions
 using AutomotiveDrivingModels
-using LinearAlgebra
+using LinearAlgebra # norm function
+using StatsBase # weights function
 include("admin_functions.jl")
 include("driving_functions.jl")
 include("filtering_functions.jl")
@@ -66,17 +67,6 @@ end
 	@test mean_p[:sigma] == 0.25
 end
 
-@testset "particle_difference" begin
-	A = Dict(:T=>0.4,:v_des => 20.)
-	B = Dict(:v_des => 20., :T=>0.4)
-	@test particle_difference(A,B) == 0.
-	
-	# Would like to be able to test something like this
-	# Should throw an error as keys aren't the same for both dicts
-	#A = Dict(:T=>0.4,:v_des => 20.)
-	#B = Dict(:v_des => 20., :p=>0.4)
-	#@test_throws ErrorException particle_difference(A,B) == 0.
-end
 #-------------------test_driving_functions-------------------------
 @testset "init_scene_roadway" begin
 	scene,road = init_scene_roadway([0.,10.,20.,30.],car_vel_array=[0.,10.,20.,0.])
@@ -224,7 +214,7 @@ end
 	for i in 1:n_cars
 	    trupos = rec.frames[100].entities[i].state.posF.s
 	    p_set_dict = gen_test_particles(num_p)
-	    p_set_new = update_p_one_step(roadway,scene,trupos,p_set_dict,car_id=i,approach="cem",elite_fraction_percent=60)
+	    p_set_new = update_p_one_step(roadway,scene,trupos,p_set_dict,car_id=i,approach="pf",elite_fraction_percent=60)
 	    @test length(keys(p_set_new)) == 2
 	    @test length(p_set_new[:v_des]) == 5
 	end
@@ -245,6 +235,23 @@ end
 	@test length(keys(bucket_array[1])) == 2
 end
 
+@testset "capture_filtering_progress" begin
+	# 5 cars adjacent lanes scenario with 2 parameters
+	num_particles = 100
+	lane_place_array = [[(0.,10.)],[(0.,20.)],[(0.,15.)],[(0.,20.)],[(0.,20.)]]
+	num_cars = 5
+	d1 = Dict(:v_des=>10.0,:σ=>0.2);d2 = Dict(:v_des=>20.0,:σ=>0.3);d3 = Dict(:v_des=>15.0,:σ=>0.)
+	d4 = Dict(:v_des=>18.0,:σ=>0.4);d5 = Dict(:v_des=>27.0,:σ=>0.2)
+	car_particles = [d1,d2,d3,d4,d5]
+
+	particle_props = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.)]
+	rmse_array_pf = capture_filtering_progress(num_particles,num_cars,lane_place_array,
+	    car_particles,particle_props,approach="pf")
+	rmse_array_cem = capture_filtering_progress(num_particles,num_cars,lane_place_array,
+	    car_particles,particle_props,approach="cem")
+	@test length(rmse_array_pf) == 99
+	@test length(rmse_array_cem) == 99
+end
 #-----------------------test_metrics_functions----------------------
 @testset "calc_rmse_pos" begin
 	# Generate truth data
@@ -276,4 +283,16 @@ end
 	@test length(test_rmse_pos) == 100
 	@test test_rmse_pos[20] > test_rmse_pos[5]
 
+end
+
+@testset "particle_difference" begin
+	A = Dict(:T=>0.4,:v_des => 20.)
+	B = Dict(:v_des => 20., :T=>0.4)
+	@test particle_difference(A,B) == 0.
+	
+	# Would like to be able to test something like this
+	# Should throw an error as keys aren't the same for both dicts
+	#A = Dict(:T=>0.4,:v_des => 20.)
+	#B = Dict(:v_des => 20., :p=>0.4)
+	#@test_throws ErrorException particle_difference(A,B) == 0.
 end
