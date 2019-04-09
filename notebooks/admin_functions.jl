@@ -259,3 +259,46 @@ function plot_dict(d::Dict)
     end
     legend()
 end
+
+"""
+    concat_symbols(a::Symbol,b::Symbol)
+Concatenate symbols with underscore in the middle
+"""
+function concat_symbols(a::Symbol,b::Symbol)
+    return Symbol(String(a)*String("_"*String(b)))
+end
+
+"""
+Combine different experiment results into one
+
+Different experiments result in the same values. We want to plot them all on one graph
+
+# Arguments
+- `names_symbols::Array` An array containing the experiment names as symbols eg: [:pf,:cem]
+- `a::Array` Array containing dictionaries corresponding to the different experiments
+eg: [Dict(:v_des=>20.,:s=>0.1),Dict(:v_des=>30.,:s=>0.4)]
+
+# Returns
+- `d::Dict` Dict with keys as the experiment results but now with exp name concatenated and
+values as the associated value from the orginal experiments
+
+# Other functions used
+- `concat_symbols`
+"""
+function combine_exp_results_dicts(names_symbols::Array,a::Array)
+    @assert length(names_symbols) == length(a)
+    comb_dict = Dict{Symbol,Dict}()
+    for i in 1:length(names_symbols)
+        comb_dict[names_symbols[i]] = a[i]
+    end
+
+    d = Dict{Symbol,Array}()
+    for k_comb in keys(comb_dict)
+        for k_indiv in keys(comb_dict[k_comb])
+            new_key = concat_symbols(k_indiv,k_comb)
+            new_val = comb_dict[k_comb][k_indiv]
+            d[new_key] = new_val
+        end
+    end
+    return d
+end

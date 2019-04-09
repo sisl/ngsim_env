@@ -106,3 +106,27 @@ end
 	@test d[:T][1] == 0.1
 	@test d[:s][4] == 5.
 end
+
+@testset "concat_symbols" begin
+	s = concat_symbols(:T,:cem)
+	@test s == :T_cem 
+	s = concat_symbols(:v_des,:pf)
+	@test s == :v_des_pf
+end
+
+@testset "combine_exp_results_dicts" begin
+	p = Dict(:v_des=>[20.,30.],:T=>[1.,2.],:s=>[4.,6.])
+	q = Dict(:v_des=>[50.,60.],:T=>[11.,12.],:s=>[14.,8.])
+
+	a = [p,q]
+
+	names_symbols = [:pf,:cem]
+
+	res = combine_exp_results_dicts(names_symbols, a)
+	@test res[:s_cem][1] == 14.
+	@test res[:s_cem][2] == 8.
+	@test res[:v_des_cem][1] == 50.
+	@test res[:v_des_cem][2] == 60.
+	@test res[:v_des_pf][1] == 20.
+	@test res[:v_des_pf][2] == 30.
+end
