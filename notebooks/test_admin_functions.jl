@@ -74,3 +74,35 @@ end
 	@test d[:v_des] == 30.
 	@test d[:T] == 4.
 end
+
+@testset "compute_mean_dict" begin
+	a = Dict(:s=>1.,:T=>2.)
+	b = Dict(:s=>3.,:T=>7.)
+	c = Dict(:s=>2.,:T=>5.)
+	q = [a,b,c]
+	n = compute_mean_dict(q)
+	@test isapprox(n[:T],4.66,atol=0.01)
+	@test n[:s] == 2.
+end
+
+@testset "init_empty_array_dict" begin
+	keys_array = [:v_des,:T,:s]
+	n = 4
+	d = init_empty_array_dict(keys_array,n)
+	@test length(d[:v_des]) == 4
+	@test length(d[:s]) == 4
+	@test length(d[:T]) == 4
+end
+
+@testset "combine_array_dicts" begin
+	A = Dict(:v_des=>20.,:s=>1.,:T=>0.1)
+	B= Dict(:v_des=>10.,:s=>2.,:T=>0.4)
+	C= Dict(:v_des=>40.,:s=>6.,:T=>0.7)
+	D= Dict(:v_des=>30.,:s=>5.,:T=>0.2)
+	q = [A,B,C,D]
+	d = combine_array_dicts(q)
+	@test d[:v_des][2] == 10.
+	@test d[:T][4] == 0.2
+	@test d[:T][1] == 0.1
+	@test d[:s][4] == 5.
+end

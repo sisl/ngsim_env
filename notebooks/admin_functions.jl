@@ -163,6 +163,8 @@ end
 	mean_dict(a::Array)
 Find a dict which has the mean value of input dicts in `a`, which is an array of input dicts
 
+Can possibly be done more elegantly using `merge!(+,a...)`
+
 # Returns
 - `b:Dict` Dict with same keys as the input dicts have, and value that is the mean
 """
@@ -177,4 +179,83 @@ function mean_dict(a::Array)
         b[k] = v/n_dicts
     end
     return b
+end
+
+"""
+	compute_mean_dict(q::Array)
+Find a dict which has the mean value of input dicts in `a`, which is an array of input dicts
+
+Is alternate way to `mean_dict`. This function was written to avoid the loop and
+merge all the dicts together in one fell swoop using `merge!`
+
+See also: [`mean_dict`]
+
+# Returns
+- `n:Dict` Dict with same keys as the input dicts have, and value that is the mean
+"""
+function compute_mean_dict(q::Array)
+    n = merge!(+,q...)
+    for (k,v) in n
+        n[k] = v/length(q)
+    end
+    return n
+end
+
+"""
+    init_empty_array_dict(keys_array::Array,n::Int64)
+Initialize a dictionary with empty array of given size `n::Int64` associated with given keys 
+in `keys_array::Array` 
+"""
+function init_empty_array_dict(keys_array::Array,n::Int64)
+    d = Dict{Symbol,Array}()
+    for k in keys_array
+        d[k]=Array{Float64}(undef,n)
+    end
+    return d
+end
+
+"""
+    combine_array_dicts(q::Array)
+Combine array of dictionaries `q::Array` with all elements having the same key
+into a single dict with the same keys and associated value being all the values in the input array
+of dicts combined into associated arrays
+
+# Other functions used
+- `init_empty_array_dic`
+"""
+function combine_array_dicts(q::Array)
+    params = collect(keys(q[1]))
+    num_params = length(params)
+    num_vals = length(q)
+
+    # Create an array with keys as given in params and associated value as an empty array of length num_vals
+    d = init_empty_array_dict(params,num_vals)
+
+    for i in 1:num_vals
+        input_dict = q[i]
+        for k in keys(input_dict)
+            d[k][i] = input_dict[k]
+        end
+    end
+    return d
+end
+
+"""
+    plot_dict(d::Dict)
+Plot the values of a dict separated by keys. Can't be tested so providing example below
+
+# Example
+A = Dict(:v_des=>20.,:s=>1.,:T=>0.1)
+B= Dict(:v_des=>10.,:s=>2.,:T=>0.4)
+C= Dict(:v_des=>40.,:s=>6.,:T=>0.7)
+D= Dict(:v_des=>30.,:s=>5.,:T=>0.2)
+q = [A,B,C,D]
+d = combine_array_dicts(q)
+plot_dict(d)
+"""
+function plot_dict(d::Dict)
+    for k in keys(d)
+        plot(d[k],label=k)
+    end
+    legend()
 end
