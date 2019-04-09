@@ -55,3 +55,22 @@ end
 	@test mean_p[:v_des] == 25.0
 	@test mean_p[:sigma] == 0.25
 end
+
+@testset "zero_dict" begin
+	n = zero_dict([:v_des,:σ,:T,:s])
+	@test length(keys(n)) == 4
+	@test n[:v_des] == 0.
+	@test n[:T] == 0.
+	@test n[:σ] == 0.
+end
+
+@testset "mean_dict" begin
+	a = [Dict(:v_des=>10.,:T=>1.),Dict(:v_des=>20.,:T=>2.),Dict(:v_des=>30.,:T=>3.)]
+	b = [Dict(:v_des=>15.,:T=>2.),Dict(:v_des=>30.,:T=>4.),Dict(:v_des=>45.,:T=>6.)]
+	c = mean_dict(a)
+	d = mean_dict(b)
+	@test c[:v_des] == 20.
+	@test c[:T] == 2.
+	@test d[:v_des] == 30.
+	@test d[:T] == 4.
+end

@@ -51,3 +51,23 @@ function particle_difference(trueparticle::Dict,particle::Dict)
     # Find the norm of the vector containing these diff values
     return norm(collect(values(diff_particle)))
 end
+
+"""
+    particle_difference(trueparticle::Dict,particle::Dict)
+Find norm difference between each key of two dicts with same keys
+
+# Returns
+- `diff_particle::Dict` Dict with keys same as input dicts and values as abs(diff) between two for every key
+"""
+function particle_difference_paramwise(trueparticle::Dict,particle::Dict)
+    @assert keys(trueparticle)==keys(particle)
+    
+    # Create a dictinary with same keys as input dicts but value as diff between
+    diff_particle = merge(-,trueparticle,particle)
+    
+    # Find the norm of the vector containing these diff values
+    for (k,v) in diff_particle
+        diff_particle[k] = norm(v)
+    end
+    return diff_particle
+end

@@ -43,3 +43,11 @@ end
 	#B = Dict(:v_des => 20., :p=>0.4)
 	#@test_throws ErrorException particle_difference(A,B) == 0.
 end
+
+@testset "particle_difference_paramwise" begin
+	a = Dict(:v_des=>25.,:T=>0.5)
+	b = Dict(:v_des=>40.,:T=>2.5)
+	c = particle_difference_paramwise(a,b)
+	@test c[:v_des] == 15.
+	@test c[:T] == 2.
+end

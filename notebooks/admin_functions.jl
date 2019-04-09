@@ -142,3 +142,39 @@ function find_mean_particle(p_set_dict::Dict)
     end
     return mean_particle
 end
+
+"""
+    zero_dict(keys::Array)
+Create a dictionary using the provided keys with 0 associated values
+
+# Arguments
+- `keys:Array{Symbol}` An array containing the keys. Caution: these must be of type Symbol.
+This is because the use case is working with IDM params, and these are of type Symbol
+"""
+function zero_dict(keys::Array)
+    d = Dict{Symbol,Float64}()
+    for k in keys
+        d[k]=0.
+    end
+    return d
+end
+
+"""
+	mean_dict(a::Array)
+Find a dict which has the mean value of input dicts in `a`, which is an array of input dicts
+
+# Returns
+- `b:Dict` Dict with same keys as the input dicts have, and value that is the mean
+"""
+function mean_dict(a::Array)
+    params = collect(keys(a[1]))
+    b = zero_dict(params)
+    n_dicts = length(a)
+    for i in 1:n_dicts
+        b = merge(+,b,a[i])
+    end
+    for (k,v) in b
+        b[k] = v/n_dicts
+    end
+    return b
+end
