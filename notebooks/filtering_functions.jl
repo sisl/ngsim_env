@@ -215,3 +215,57 @@ function capture_filtering_progress(num_p::Int64,n_cars::Int64,lane_place_array:
     end
     return mean_particle_error
 end
+
+"""
+	capture_filtering_progress_paramwise(num_p::Int64,n_cars::Int64,lane_place_array::Array,
+        car_particles::Array,particle_props::Array;approach="pf")
+
+Captures the filtering progress and outputs the norm of the difference parameter wise
+to enable plotting the performance for each parameter
+
+# Returns
+- `mean_error_dict::Array{Dict}` Array with each element being a dict. The keys of the 
+dict are the IDM parameters and the value is the norm of the difference at that timestep 
+(length of the array is total timesteps) from the true parameter, averaged over the 
+cars present in the scene at that timestep
+
+See also: `capture_filtering_progress`
+"""
+function capture_filtering_progress_paramwise(num_p::Int64,n_cars::Int64,lane_place_array::Array,
+        car_particles::Array,particle_props::Array;approach="pf")
+    scene,roadway = init_place_cars(lane_place_array)
+    rec = generate_truth_data(lane_place_array,car_particles)
+    f_end_num = length(rec.frames)
+    
+    num_params = length(particle_props)
+    params = collect(keys(car_particles)) # Returns an array containing the params
+    
+    bucket_array = initialize_carwise_particle_buckets(n_cars,num_p,particle_props)
+    
+    mean_error_dict = Array{Dict}(undef,f_end_num-1)
+    
+    # Loop over all the frames in the ground truth trajectory
+    for t in 1:f_end_num-1
+        #if t%10==0 @show t end
+        f = rec.frames[f_end_num - t + 1]
+
+        carwise_error_dict = Array{Dict}(undef,n_cars)
+       
+        # Loop over cars in the scene
+        for car_id in 1:n_cars
+            old_p_set_dict = bucket_array[car_id]
+            trupos = rec.frames[f_end_num-t].entities[car_id].state.posF.s
+            new_p_set_dict = update_p_one_step(roadway,f,trupos,old_p_set_dict,
+                car_id=car_id,approach=approach)
+            bucket_array[car_id] = new_p_set_dict
+            
+            # Find the mean particle from all the particles in the bucket
+            mean_particle = find_mean_particle(new_p_set_dict)
+            true_particle = car_particles[car_id]
+            
+            carwise_error_dict[car_id] = particle_difference_paramwise(true_particle,mean_particle)
+        end
+        mean_error_dict[t] = mean_dict(carwise_error_dict)
+    end
+    return mean_error_dict
+end

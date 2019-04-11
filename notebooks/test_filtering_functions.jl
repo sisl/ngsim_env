@@ -79,3 +79,21 @@ end
 	@test length(rmse_array_pf) == 99
 	@test length(rmse_array_cem) == 99
 end
+
+@testset "capture_filtering_progress_paramwise" begin
+	# 5 cars adjacent lanes scenario with 2 parameters
+	num_particles = 100
+	lane_place_array = [[(0.,10.)],[(0.,20.)],[(0.,15.)],[(0.,20.)],[(0.,20.)]]
+	num_cars = 5
+	d1 = Dict(:v_des=>10.0,:σ=>0.2);d2 = Dict(:v_des=>20.0,:σ=>0.3);d3 = Dict(:v_des=>15.0,:σ=>0.)
+	d4 = Dict(:v_des=>18.0,:σ=>0.4);d5 = Dict(:v_des=>27.0,:σ=>0.2)
+	car_particles = [d1,d2,d3,d4,d5]
+
+	particle_props = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.)]
+	rmse_array_pf = capture_filtering_progress_paramwise(num_particles,num_cars,lane_place_array,
+	    car_particles,particle_props,approach="pf")
+	rmse_array_cem = capture_filtering_progress_paramwise(num_particles,num_cars,lane_place_array,
+	    car_particles,particle_props,approach="cem")
+	@test length(rmse_array_pf) == 99
+	@test length(rmse_array_cem) == 99
+end
