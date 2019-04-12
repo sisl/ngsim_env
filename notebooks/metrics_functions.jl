@@ -71,3 +71,43 @@ function particle_difference_paramwise(trueparticle::Dict,particle::Dict)
     end
     return diff_particle
 end
+
+"""
+    estimate_then_evaluate_imitation(num_p::Int64,n_cars::Int64,lane_place_array::Array,
+        car_particles::Array,particle_props::Array;approach="pf")
+
+Estimate parameters of IDM, then use the mean of the particle bucket for each car to generate
+simulated trajectory and calculate the rmse position between true and simulated trajectory
+
+# Returns
+- `rmse_pos_array::Array` Array with each element being the rmse position at that time index
+"""
+function estimate_then_evaluate_imitation(num_p::Int64,n_cars::Int64,lane_place_array::Array,
+        car_particles::Array,particle_props::Array;approach="pf")
+    scene,roadway = init_place_cars(lane_place_array)
+    rec = generate_truth_data(lane_place_array,car_particles)
+    f_end_num = length(rec.frames)
+    
+    bucket_array = initialize_carwise_particle_buckets(n_cars,num_p,particle_props)
+    for t in 1:f_end_num-1
+        #if t%10==0 @show t end
+        f = rec.frames[f_end_num - t + 1]
+
+        for car_id in 1:n_cars
+            old_p_set_dict = bucket_array[car_id]
+            trupos = rec.frames[f_end_num-t].entities[car_id].state.posF.s
+            new_p_set_dict = update_p_one_step(roadway,f,trupos,old_p_set_dict,
+                car_id=car_id,approach=approach)
+            bucket_array[car_id] = new_p_set_dict
+        end
+    end  
+    
+    # Estimation of parameters ends here. Now generate simulation
+    car_particles_sim = find_mean_particle_carwise(bucket_array)
+    sim_rec = generate_truth_data(lane_place_array,car_particles_sim)
+    
+    # Now find the rmse error between the positions of the trajs
+    rmse_pos_array = calc_rmse_pos(rec,sim_rec,num_cars = n_cars)
+    
+    return rmse_pos_array
+end

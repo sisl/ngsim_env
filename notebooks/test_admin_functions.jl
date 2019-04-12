@@ -56,6 +56,18 @@ end
 	@test mean_p[:sigma] == 0.25
 end
 
+@testset "find_mean_particle_carwise" begin
+	n_cars = 2
+	num_p = 4
+	particle_props = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.)]
+	bucket_array = initialize_carwise_particle_buckets(n_cars,
+	    num_p,particle_props)
+	carwise_mean_particle = find_mean_particle_carwise(bucket_array)
+	@test length(carwise_mean_particle) == n_cars
+	@test length(keys(carwise_mean_particle[1])) == 2
+	@test length(carwise_mean_particle[1][:v_des]) == 1
+end
+
 @testset "zero_dict" begin
 	n = zero_dict([:v_des,:σ,:T,:s])
 	@test length(keys(n)) == 4

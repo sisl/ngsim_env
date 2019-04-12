@@ -96,6 +96,11 @@ end
 
 More general particle buckets initialization associated with every car.
 `init_car_particle_buckets` used `gen_test_particles` and hence was limited
+
+# Returns
+- `array_of_particle_buckets::Array` Each element corresponds to a different car
+Each element contains a dict with keys as IDM paramters and values as array with 
+each element in that array being a different particle for that parameter
 """
 function initialize_carwise_particle_buckets(n_cars::Int64,num_particles::Int64,input::Array)
     array_of_particle_buckets = Array{Dict}(undef,n_cars)
@@ -141,6 +146,30 @@ function find_mean_particle(p_set_dict::Dict)
         mean_particle[k] = mean(v)
     end
     return mean_particle
+end
+
+"""
+    find_mean_particle_carwise(bucket_array::Array)
+
+Find mean particle for each car
+
+# Arguments
+- `bucket_array::Array{Dict}` Array with each element corresponding
+to a different car's associated particle of buckets. Each element is a
+dict with keys as IDM parameters and value as array of particles
+
+# Returns
+- `carwise_mean_particle::Array{Dict}` Array with each element
+corresponding to different car. Each element is a dict that 
+contains the mean from the input bucket of particles
+"""
+function find_mean_particle_carwise(bucket_array::Array)
+    n_cars = length(bucket_array)
+    carwise_mean_particle = Array{Dict}(undef,n_cars)
+    for i in 1:n_cars
+        carwise_mean_particle[i] = find_mean_particle(bucket_array[i])
+    end
+    return carwise_mean_particle
 end
 
 """

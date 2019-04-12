@@ -51,3 +51,23 @@ end
 	@test c[:v_des] == 15.
 	@test c[:T] == 2.
 end
+
+@testset "estimate_then_evaluate_imitation" begin
+	num_particles = 100
+	lane_place_array = [[(0.,10.)],[(0.,20.)],[(0.,15.)],[(0.,20.)],[(0.,20.)]]
+	num_cars = 5
+	d1 = Dict(:v_des=>10.0,:σ=>0.2);d2 = Dict(:v_des=>20.0,:σ=>0.3);d3 = Dict(:v_des=>15.0,:σ=>0.)
+	d4 = Dict(:v_des=>18.0,:σ=>0.4);d5 = Dict(:v_des=>27.0,:σ=>0.2)
+	car_particles = [d1,d2,d3,d4,d5]
+
+	particle_props = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.)]
+	rmse_pos_array_cem = estimate_then_evaluate_imitation(num_particles,num_cars,lane_place_array,
+	    car_particles,particle_props,approach="cem")
+	rmse_pos_array_pf = estimate_then_evaluate_imitation(num_particles,num_cars,lane_place_array,
+	    car_particles,particle_props,approach="pf")
+	# plot(rmse_pos_array_cem,label="cem")
+	# plot(rmse_pos_array_pf,label="pf")
+	# legend()
+	@test length(rmse_pos_array_cem) == 100
+	@test length(rmse_pos_array_pf) == 100
+end
