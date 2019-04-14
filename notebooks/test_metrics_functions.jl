@@ -32,6 +32,38 @@
 
 end
 
+@testset "calc_rmse_vel" begin
+	# Generate truth data
+	pos_vel_array_1 = [(0.,10.)]
+	pos_vel_array_2 = [(0.,10.)]
+	pos_vel_array_3 = [(0.,10.)]
+	lane_place_array = [pos_vel_array_1,pos_vel_array_2,pos_vel_array_3]
+	scene,roadway = init_place_cars(lane_place_array)
+	d1 = Dict(:v_des=>10.0,:σ=>0.);d2 = Dict(:v_des=>10.0,:σ=>0.)
+	d3 = Dict(:v_des=>10.0,:σ=>0.)
+	car_particle_array = [d1,d2,d3]
+
+	truerec = generate_truth_data(lane_place_array,car_particle_array)
+
+	# Generate simulated data
+	pos_vel_array_1 = [(0.,10.)]
+	pos_vel_array_2 = [(0.,10.)]
+	pos_vel_array_3 = [(0.,10.)]
+	lane_place_array = [pos_vel_array_1,pos_vel_array_2,pos_vel_array_3]
+	scene,roadway = init_place_cars(lane_place_array)
+	d1 = Dict(:v_des=>10.0,:σ=>0.);d2 = Dict(:v_des=>10.0,:σ=>0.)
+	d3 = Dict(:v_des=>11.0,:σ=>0.)
+	car_particle_array = [d1,d2,d3]
+
+	simrec = generate_truth_data(lane_place_array,car_particle_array)
+
+	test_rmse_vel = calc_rmse_vel(truerec,simrec,num_cars=3)
+	
+	@test length(test_rmse_vel) == 100
+	@test test_rmse_vel[20] > test_rmse_vel[5]
+
+end
+
 @testset "particle_difference" begin
 	A = Dict(:T=>0.4,:v_des => 20.)
 	B = Dict(:v_des => 20., :T=>0.4)

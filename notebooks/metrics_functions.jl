@@ -35,6 +35,42 @@ function calc_rmse_pos(truerec,simrec;num_cars=-1)
 end
 
 """
+    calc_rmse_vel(truerec::QueueRecord,simrec::QueueRecord;num_cars=-1)
+
+Calculate the RMSE in velocity between two QueueRecords i.e. what you get after running
+simulate. Use case is that truerec is the ground truth trajectory and the other is the
+trajectory you get after running with the estimated IDM parameters
+
+# Returns
+- `rmse_vel::Array`: An array with the rmse_vel indexed by time
+"""
+function calc_rmse_vel(truerec,simrec;num_cars=-1)
+    @assert num_cars != -1
+    n_frames = length(truerec.frames)
+    @assert length(truerec.frames) == length(simrec.frames)
+    
+    n_steps = length(truerec.frames)
+
+    X = Array{Float64}(undef,n_steps, 1)
+    rmse_vel = Array{Float64}(undef,n_steps,1)
+    for t in 1:n_steps
+        truef = truerec.frames[n_steps - t + 1]
+        simf = simrec.frames[n_steps - t + 1]
+
+        temp_square_error = 0
+        for c in 1:num_cars
+            truev = truef.entities[c].state.v
+            simv = simf.entities[c].state.v
+
+            temp_square_error += sqrt(abs2(truev-simv))
+    #         @show temp_square_error
+        end
+        rmse_vel[t] = temp_square_error/num_cars
+    end
+    return rmse_vel
+end
+
+"""
     particle_difference(trueparticle::Dict,particle::Dict)
 Find Euclidean distance between two dictionaries having same keys
 
@@ -81,6 +117,10 @@ simulated trajectory and calculate the rmse position between true and simulated 
 
 # Returns
 - `rmse_pos_array::Array` Array with each element being the rmse position at that time index
+
+# Other functions used
+- `find_mean_particles_carwise`
+- `calc_rmse_pos`
 """
 function estimate_then_evaluate_imitation(num_p::Int64,n_cars::Int64,lane_place_array::Array,
         car_particles::Array,particle_props::Array;approach="pf")
