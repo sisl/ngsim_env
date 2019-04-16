@@ -89,3 +89,30 @@ function estimate_then_make_video(num_p::Int64,n_cars::Int64,lane_place_array::A
     # Make a video with simulation in color and truth in white
     compare_trajectories(rec,sim_rec,roadway)
 end
+
+"""
+	animate_record(rec_true::SceneRecord,rec_sim::SceneRecord,roadway,dt::Float64)
+
+Function that is used by reel to generate video of driving behavior
+
+# Functions used
+- `veh_overlay` defined overlay to show ghost vehicles
+
+# Example
+```
+duration, fps, render_hist = animate_record(rec, sim_rec, roadway, 0.1)
+film = roll(render_hist, fps = fps, duration = duration)
+```
+"""
+function animate_record(rec_true::SceneRecord,rec_sim::SceneRecord,
+        roadway,dt::Float64)
+    duration =rec_sim.nframes*dt
+    fps = Int(1/dt)
+    function render_rec(t, dt)
+        frame_index = Int(floor(t/dt)) + 1
+        ghost_overlay = veh_overlay(rec_true[frame_index-nframes(rec_sim)])
+        return render(rec_sim[frame_index-nframes(rec_sim)], roadway,
+            [ghost_overlay],canvas_height=100)
+    end
+    return duration, fps, render_rec
+end

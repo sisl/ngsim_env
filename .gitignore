@@ -154,3 +154,6 @@ scripts/imitation/logs/*
 
 # vscode
 .vscode/
+
+# .webm files generated using Reel
+*.webm
