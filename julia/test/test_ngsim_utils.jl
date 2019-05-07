@@ -1,8 +1,9 @@
-using Base.Test
+using Test
 using AutoEnvs
+using NGSIM
 
 function test_index_ngsim_trajectory()
-    filepath = Pkg.dir("NGSIM", "data", "trajdata_i101_trajectories-0750am-0805am.txt")
+    filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", "trajdata_i101_trajectories-0750am-0805am.txt")
     index = index_ngsim_trajectory(filepath, verbose=1)
     @test length(index) > 2000
     for (k,v) in index
@@ -56,7 +57,7 @@ end
 function test_sample_multiple_trajdata_vehicle_real()
     offset = 250
     n_veh = 100
-    filepath = Pkg.dir("NGSIM", "data", "trajdata_i101_trajectories-0750am-0805am.txt")
+    filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", "trajdata_i101_trajectories-0750am-0805am.txt")
     trajinfos = [index_ngsim_trajectory(filepath, minlength=offset, verbose=0)]
     traj_idx, vehids, ts, te = sample_multiple_trajdata_vehicle(n_veh, trajinfos, offset)
     @test length(vehids) == n_veh
@@ -76,7 +77,7 @@ function test_load_ngsim_trajdatas()
         "trajdata_i101_trajectories-0820am-0835am.txt",
         "trajdata_i101_trajectories-0750am-0805am.txt"
     ]
-    filepaths = [Pkg.dir("NGSIM", "data", fn) for fn in filenames]
+    filepaths = [joinpath(dirname(pathof(NGSIM)), "..", "data", fn) for fn in filenames]
     load_ngsim_trajdatas(filepaths, minlength=250)
 
 end

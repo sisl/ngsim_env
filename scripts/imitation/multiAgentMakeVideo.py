@@ -26,7 +26,7 @@ import validate
 #-----------------------------------------------------------------------------
 basedir = '../../data/experiments/'
 model_labels = [
-    'rails_smoothed_off_brake_3000_1_fine'
+    'rails_smoothed_infogail_2000_2_fine'
 ]
 itrs = [
     200
@@ -79,7 +79,7 @@ def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs
 #			FUNCTION: CREATE RENDER MAP
 #-----------------------------------------------------------------------------
 def create_render_map(model_labels, model_args_filepaths, model_params_filepaths, 
-                      multi=False, rand=None, max_steps=200, n_vehs=None, remove_ngsim=False):
+                      multi=False, rand=None, max_steps=50, n_vehs=None, remove_ngsim=False):
     render_map = dict()
     env_kwargs = dict()
     if rand != None:

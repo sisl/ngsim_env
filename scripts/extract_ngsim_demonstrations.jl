@@ -63,8 +63,8 @@ function extract_features(
                 end
 
                 # stack onto existing features
-                features[veh.id] = cat(2, features[veh.id], 
-                    reshape(veh_features, (n_features, 1)))
+                features[veh.id] = cat(features[veh.id], 
+                    reshape(veh_features, (n_features, 1)), dims=2)
             end
         end
     end
@@ -112,7 +112,6 @@ function extract_ngsim_features(
     ext = build_feature_extractor()
     features = Dict{Int, Dict{Int, Array{Float64}}}()
 
-    tic()
     # extract 
     for traj_idx in 1:n_expert_files
 
@@ -130,7 +129,6 @@ function extract_ngsim_features(
             maxframes
         )
     end
-    toc()
 
     output_filepath = joinpath("../data/trajectories/", output_filename)
     println("output filepath: $(output_filepath)")
@@ -150,7 +148,6 @@ function extract_simple_features(
     ext = build_feature_extractor()
     features = Dict{Int, Dict{Int, Array{Float64}}}()
 
-    tic()
     # setup
     trajdata = load_trajdata(filepath)
     roadway = get_corresponding_roadway(1)
@@ -164,7 +161,6 @@ function extract_simple_features(
         prime,
         maxframes
     )
-    toc()
     write_features(features, output_filepath, ext)
 end
 

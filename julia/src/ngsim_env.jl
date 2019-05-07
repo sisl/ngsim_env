@@ -12,16 +12,16 @@ Description:
     NGSIM env that plays NGSIM trajectories, allowing the agent to take the place 
     of one of the vehicles in the trajectory
 =#
-type NGSIMEnv <: Env
+mutable struct NGSIMEnv <: Env
     trajdatas::Vector{ListRecord}
     trajinfos::Vector{Dict}
     roadways::Vector{Roadway}
-    roadway::Union{Void, Roadway} # current roadway
+    roadway::Union{Nothing, Roadway} # current roadway
     scene::Scene
     rec::SceneRecord
     ext::MultiFeatureExtractor
     egoid::Int # current id of relevant ego vehicle
-    ego_veh::Union{Void, Vehicle} # the ego vehicle
+    ego_veh::Union{Nothing, Vehicle} # the ego vehicle
     traj_idx::Int # current index into trajdatas 
     t::Int # current timestep in the trajdata
     h::Int # current maximum horizon for egoid
@@ -39,9 +39,9 @@ type NGSIMEnv <: Env
     infos_cache::Dict # cache for infos intermediate results
     function NGSIMEnv(
             params::Dict; 
-            trajdatas::Union{Void, Vector{ListRecord}} = nothing,
-            trajinfos::Union{Void, Vector{Dict}} = nothing,
-            roadways::Union{Void, Vector{Roadway}} = nothing,
+            trajdatas::Union{Nothing, Vector{ListRecord}} = nothing,
+            trajinfos::Union{Nothing, Vector{Dict}} = nothing,
+            roadways::Union{Nothing, Vector{Roadway}} = nothing,
             reclength::Int = 5,
             Δt::Float64 = .1,
             primesteps::Int = 50,
@@ -93,8 +93,8 @@ end
 function reset(
         env::NGSIMEnv; 
         offset::Int=env.H + env.primesteps,
-        egoid::Union{Void,Int}=nothing, 
-        start::Union{Void,Int}=nothing,
+        egoid::Union{Nothing,Int}=nothing, 
+        start::Union{Nothing,Int}=nothing,
         traj_idx::Int=1)
     # sample the trajectory, ego vehicle
     env.traj_idx, env.egoid, env.t, env.h = sample_trajdata_vehicle(
@@ -115,7 +115,7 @@ function reset(
         update!(env.rec, get!(env.scene, env.trajdatas[env.traj_idx], t))
     end
     # set the ego vehicle
-    env.ego_veh = env.scene[findfirst(env.scene, env.egoid)]
+    env.ego_veh = env.scene[findfirst(env.egoid, env.scene)]
     # set the roadway
     env.roadway = env.roadways[env.traj_idx]
     # env.t is the next timestep to load
@@ -148,7 +148,7 @@ function _step!(env::NGSIMEnv, action::Array{Float64})
 
     # load the actual scene, and insert the vehicle into it
     get!(env.scene, env.trajdatas[env.traj_idx], env.t)
-    vehidx = findfirst(env.scene, env.egoid)
+    vehidx = findfirst(env.egoid, env.scene)
     orig_veh = env.scene[vehidx] # for infos purposes
     env.scene[vehidx] = env.ego_veh
 
@@ -157,9 +157,9 @@ function _step!(env::NGSIMEnv, action::Array{Float64})
 
     # compute info about the step
     step_infos = Dict{String, Float64}()
-    step_infos["rmse_pos"] = sqrt(abs2((orig_veh.state.posG - env.ego_veh.state.posG)))
-    step_infos["rmse_vel"] = sqrt(abs2((orig_veh.state.v - env.ego_veh.state.v)))
-    step_infos["rmse_t"] = sqrt(abs2((orig_veh.state.posF.t - env.ego_veh.state.posF.t)))
+    step_infos["rmse_pos"] = norm((orig_veh.state.posG - env.ego_veh.state.posG))
+    step_infos["rmse_vel"] = norm((orig_veh.state.v - env.ego_veh.state.v))
+    step_infos["rmse_t"] = norm((orig_veh.state.posF.t - env.ego_veh.state.posF.t))
     step_infos["x"] = env.ego_veh.state.posG.x
     step_infos["y"] = env.ego_veh.state.posG.y
     step_infos["s"] = env.ego_veh.state.posF.s
@@ -213,7 +213,7 @@ function _compute_feature_infos(env::NGSIMEnv, features::Array{Float64})
     )
 end
 function AutoRisk.get_features(env::NGSIMEnv)
-    veh_idx = findfirst(env.scene, env.egoid)
+    veh_idx = findfirst(env.egoid, env.scene)
     pull_features!(env.ext, env.rec, env.roadway, veh_idx)
     return deepcopy(env.ext.features)
 end

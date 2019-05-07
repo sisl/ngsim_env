@@ -1,9 +1,10 @@
-using Base.Test
+using Test
 using AutoEnvs
+using NGSIM
 
 function test_basics()
     # ctor
-    filepath = Pkg.dir("NGSIM", "data", "trajdata_i80_trajectories-0400-0415.txt")
+    filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", "trajdata_i80_trajectories-0400-0415.txt")
     n_veh = 2
     params = Dict(
         "trajectory_filepaths"=>[filepath], 
@@ -33,13 +34,13 @@ function test_basics()
     acc_idx = [i for (i,n) in enumerate(fns) if "accel" == n][1]
     tur_idx = [i for (i,n) in enumerate(fns) if "turn_rate_global" == n][1]
     a = zeros(n_veh, 2)
-    a[:, 2] = 1
+    a[:, 2] .= 1
     for _ in 1:10
         nx, _, _, _ = step(env, a)
     end
 
     @test all(abs.(nx[:, acc_idx]) .<= 1e-1)
-    @test all(abs.(nx[:, tur_idx] - 1) .<= 1e-1)
+    @test all(abs.(nx[:, tur_idx] .- 1) .<= 1e-1)
 
     # test infos 
     reset(env)
@@ -64,7 +65,7 @@ end
 function test_render()
     srand(2)
     n_veh = 50
-    filepath = Pkg.dir("NGSIM", "data", "trajdata_i101_trajectories-0805am-0820am.txt")
+    filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", "trajdata_i101_trajectories-0805am-0820am.txt")
     params = Dict(
         "trajectory_filepaths"=>[filepath],
         "H"=>50,

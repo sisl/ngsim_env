@@ -1,9 +1,10 @@
-using Base.Test
+using Test
 using AutoEnvs
+using NGSIM
 
 function test_basics()
     # ctor
-    filepath = Pkg.dir("NGSIM", "data", "trajdata_i80_trajectories-0400-0415.txt")
+    filepath = joinpath(dirname(pathof(NGSIM)), "..", "data", "trajdata_i80_trajectories-0400-0415.txt")
     n_envs = 100
     params = Dict("trajectory_filepaths"=>[filepath], "n_envs"=>n_envs)
     env = VectorizedNGSIMEnv(params)

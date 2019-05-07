@@ -110,7 +110,7 @@ function load_ngsim_trajdatas(filepaths; minlength::Int=100)
     # if they are missing, create the index
     # the index is just a collection of metadata that is saved with the 
     # trajdatas to allow for a more efficient environment implementation
-    indexes_filepaths = [replace(f, ".txt", "-index-$(minlength).jld") for f in filepaths]
+    indexes_filepaths = [replace(f, ".txt" => "-index-$(minlength).jld2") for f in filepaths]
     indexes = Dict[]
     for (i, index_filepath) in enumerate(indexes_filepaths)
         # check if index already created
@@ -118,11 +118,11 @@ function load_ngsim_trajdatas(filepaths; minlength::Int=100)
         # if not, create and save it
         if !isfile(index_filepath)
             index = index_ngsim_trajectory(filepaths[i], minlength=minlength)
-            JLD.save(index_filepath, "index", index)
+            FileIO.save(index_filepath, Dict("index" => index))
             # write this information to an hdf5 file for use in python
             # the reason we write two files is that it's convenient to load 
             # via jld a dictionary that can be used directly
-            ids_filepath = replace(index_filepath, ".jld", "-ids.h5")
+            ids_filepath = replace(index_filepath, ".jld2" => "-ids.h5")
             ids = convert(Array{Int}, collect(keys(index)))
             ts = Int[]
             te = Int[]
@@ -136,9 +136,8 @@ function load_ngsim_trajdatas(filepaths; minlength::Int=100)
                 write(file, "te", te)
             end
         else
-            index = JLD.load(index_filepath)["index"]
+            index = FileIO.load(index_filepath, "index")
         end
-
         # load index
         push!(indexes, index)
     end
@@ -172,9 +171,9 @@ Returns:
 function sample_trajdata_vehicle(
         trajinfos, 
         offset::Int=0,
-        traj_idx::Union{Void,Int}=nothing,
-        egoid::Union{Void,Int}=nothing,
-        start::Union{Void,Int}=nothing)
+        traj_idx::Union{Nothing,Int}=nothing,
+        egoid::Union{Nothing,Int}=nothing,
+        start::Union{Nothing,Int}=nothing)
     if traj_idx == nothing || egoid == nothing || start == nothing
         traj_idx = rand(1:length(trajinfos))
         egoid = rand(collect(keys(trajinfos[traj_idx])))
@@ -218,13 +217,13 @@ function sample_multiple_trajdata_vehicle(
         trajinfos, 
         offset::Int;
         max_resamples::Int = 100,
-        egoid::Union{Void, Int} = nothing,
-        traj_idx::Union{Void, Int} = nothing,
+        egoid::Union{Nothing, Int} = nothing,
+        traj_idx::Union{Nothing, Int} = nothing,
         verbose::Bool = true,
-        rseed::Union{Void, Int} = nothing)
+        rseed::Union{Nothing, Int} = nothing)
     
     if rseed != nothing
-        srand(rseed)
+        Random.seed!(rseed)
     end
     # if passed in egoid and traj_idx, use those, otherwise, sample
     if egoid == nothing || traj_idx == nothing 
