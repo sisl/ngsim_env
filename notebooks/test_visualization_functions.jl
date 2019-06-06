@@ -49,4 +49,8 @@ end
 	duration, fps, render_hist = animate_record(rec, sim_rec, roadway, 0.1)
 	@test duration == 10.
 	@test fps == 10
+
+	# Then to use Reel to make the video as a gif, the foll commented code
+	#film = roll(render_hist, fps = fps, duration = duration)
+	#write("5cars.gif",film)
 end
