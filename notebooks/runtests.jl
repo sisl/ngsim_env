@@ -5,6 +5,7 @@ using LinearAlgebra
 using StatsBase # For weights function used to create weighted likelihood
 using AutoViz # For SceneOverlay within visualization_functions.jl
 using Interact # For @manipulate within visualization_functions.jl
+using Reel
 
 # Bring in the method definitions
 include("admin_functions.jl")
