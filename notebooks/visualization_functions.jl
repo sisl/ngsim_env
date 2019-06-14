@@ -234,3 +234,44 @@ function make_gif(rec_true::SceneRecord,rec_sim_pf::SceneRecord,rec_sim_cem::Sce
     end
     return duration,fps,render_rec
 end
+
+"""
+Function to plot particles so we can see how the distribution of particles
+evolves with time as the filter learns the posterior belief distribution
+
+# Returns
+A plot object. The idea is to collect all these plot objects in the filtering
+loop and then make a video
+"""
+function plot_particles(p_set_mat::Array{Float64,2},true_params)
+	# Check that number of params does not exceed 3
+	@assert size(p_set_mat,1) <= 3
+	plt = plot()
+	# 2 parameter case	
+	if size(p_set_mat,1) == 2
+		plt = scatter(p_set_mat[1,:],p_set_mat[2,:],leg=false)
+		scatter!([true_params[1]],[true_params[2]])
+	# 3 parameter case
+	else
+		plt = scatter(p_set_mat[1,:],p_set_mat[2,:],p_set_mat[3,:],leg=false)
+		scatter!([true_params[1]],[true_params[2]],[true_params[3]])
+	end
+	return plt
+end
+
+"""
+Function to make a video using an array of plots
+
+# See also
+make_gif -  has different sets of arguments
+"""
+function make_gif(plots;filename="output.mp4")
+@assert typeof(filename) == String
+@show "Making gif"
+	frames = Frames(MIME("image/png"), fps=1)
+	for plt in plots
+	    push!(frames, plt)
+	end
+	write(string("media/",filename), frames)
+	return nothing
+end # End of the reel gif writing function

@@ -331,3 +331,32 @@ function combine_exp_results_dicts(names_symbols::Array,a::Array)
     end
     return d
 end
+
+"""
+Written with the goal of being able to scatter plot the particles
+`to_matrix_form` was returning Adjoint. This one returns a plane and simple 2D array
+
+# Example
+num_particles = 100
+lane_place_array = [[(0.,10.)],[(0.,20.)],[(0.,15.)],[(0.,20.)],[(0.,20.)]]
+num_cars = 5
+d1 = Dict(:v_des=>10.0,:σ=>0.2);d2 = Dict(:v_des=>20.0,:σ=>0.3);d3 = Dict(:v_des=>15.0,:σ=>0.)
+d4 = Dict(:v_des=>18.0,:σ=>0.4);d5 = Dict(:v_des=>27.0,:σ=>0.2)
+car_particles = [d1,d2,d3,d4,d5]
+
+particle_props = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.)]
+bucket_array = initialize_carwise_particle_buckets(num_cars,num_particles,particle_props)
+p_set = bucket_array[1]
+to_particleMatrix(p_set)
+"""
+function to_particleMatrix(p_set)
+	num_params = length(keys(p_set))
+	
+	#XXX: Must have sigma as a parameter otherwise num_particles call will break	
+	num_particles = length(p_set[:σ])
+	temp = zeros(num_params,num_particles)
+	for (i,(k,v)) in enumerate(p_set)
+		temp[i,:] = v
+	end
+	return temp
+end
