@@ -267,8 +267,8 @@ make_gif -  has different sets of arguments
 """
 function make_gif(plots;filename="output.mp4")
 @assert typeof(filename) == String
-@show "Making gif"
-	frames = Frames(MIME("image/png"), fps=1)
+#@show "Making gif"
+	frames = Frames(MIME("image/png"), fps=10)
 	for plt in plots
 	    push!(frames, plt)
 	end
