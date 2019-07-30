@@ -128,15 +128,19 @@ driving with IDM(v_des = 10). They don't matter in the particle update of the ca
 (FOR NOW)
 - We return only the position of the car along the lane. We don't even return which lane it is
 in information. In the future, we want to return 2D position and measure 2D likelihood value somehow
+
+# Example
+td1 = load_trajdata(1);
+scene = Scene(500)
+get!(scene,td1,300)
+display(scene.entities[2].state.posF.s)
+roadway = ROADWAY_101;
+particle = Dict(:v_des=>25.0,:σ=>0.5)
+hallucinate_a_step(roadway,scene,particle,car_id=scene.entities[2].id)
 """
 function hallucinate_a_step(roadway,scene_input,particle;car_id=-1)
     if car_id==-1 @show "Please give valid car_id" end
     
-    # Hope is that scene_input does not get modified doing the simulate
-    # Extremely crucial step. Not doing the deepcopy was the problem
-    # scene was being propagated forward and therefore for every other
-    # candidate particle, the hallucination was starting from hallucinated scene
-    # resulting from previous particle
     scene = deepcopy(scene_input)
     #scene = scene_input # This was the failure case
     n_cars = scene.n 
@@ -144,12 +148,12 @@ function hallucinate_a_step(roadway,scene_input,particle;car_id=-1)
     models = Dict{Int, DriverModel}()
     
     # Create driver models for all the cars in the scene
-    for i in 1:n_cars
-        if i == car_id
-            models[i] = IntelligentDriverModel(;particle...)
+    for veh in scene
+        if veh.id == car_id
+            models[veh.id] = IntelligentDriverModel(;particle...)
         else
             # TODO: RESEARCH QUESTION: What drives the other vehicles in the hallucination
-            models[i] = IntelligentDriverModel(v_des=10.0)
+            models[veh.id] = IntelligentDriverModel(v_des=10.0)
         end
     end
     
@@ -164,10 +168,17 @@ function hallucinate_a_step(roadway,scene_input,particle;car_id=-1)
     for t in 1:n_steps
         f = rec.frames[n_steps - t + 1]
         
-        for c in car_id:car_id
-            s = f.entities[c].state.posF
-            X[t, 1] = s.s #position
-        end
+            # Access the vehicle with id as car_id and return its frenet s
+        X[t,1] = scene.entities[findfirst(car_id,f)].state.posF.s
+
+            # The above one liner in for loop fashion
+#         for veh in f
+#             if veh.id == car_id
+#                 s = veh.state.posF
+#                 X[t, 1] = s.s #position
+#                 break
+#             end
+#         end
     end
     return X[1]
 end

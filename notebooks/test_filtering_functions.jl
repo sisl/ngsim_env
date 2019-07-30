@@ -5,9 +5,12 @@
 	num_p = length(v_array)
 	sig_array = [0.1,0.1,0.1,0.1,0.1]	
 	p_set_dict = Dict(:v_des=>v_array,:σ=>sig_array)
-	scene,roadway = init_scene_roadway([0.0])
-	trupos = hallucinate_a_step(roadway,scene,Dict(:v_des=>25.0,:σ=>0.0),car_id=1)
-	lkhd_vec,p_mat,params = compute_particle_likelihoods(roadway,scene,trupos,p_set_dict,car_id=1)
+	td1 = load_trajdata(1);
+	scene = Scene(500)
+	get!(scene,td1,300)
+	roadway = ROADWAY_101;
+	trupos = hallucinate_a_step(roadway,scene,Dict(:v_des=>25.0,:σ=>0.0),car_id=4)
+	lkhd_vec,p_mat,params = compute_particle_likelihoods(roadway,scene,trupos,p_set_dict,car_id=4)
 
 	@test length(lkhd_vec) == num_p
 	@test length(params) == 2
