@@ -26,7 +26,7 @@ import validate
 #-----------------------------------------------------------------------------
 basedir = '../../data/experiments/'
 model_labels = [
-    'rails_smoothed_infogail_2000_2_fine'
+    'rails_smoothed_off_brake_3000_1_fine'
 ]
 itrs = [
     200

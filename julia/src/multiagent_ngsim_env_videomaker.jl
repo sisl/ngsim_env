@@ -184,8 +184,8 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
         # convert action into form
-	# ego_action = AccelTurnrate(action[i,:]...)
-	ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
+	ego_action = AccelTurnrate(action[i,:]...)
+	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
         # propagate the ego vehicle
         ego_states[i] = propagate(
             ego_veh,
@@ -470,6 +470,7 @@ function render(
     # some research that Tim had been doing
     overlays = [
         CarFollowingStatsOverlay(env.egoids[1], 2),
+	#IDOverlay(colorant"white",12)
     #    NeighborsOverlay(env.egoids[1], textparams = TextParams(x = 600, y_start=300))
     ]
 
@@ -499,7 +500,7 @@ function render(
         canvas_height=canvas_height,
         canvas_width=canvas_width
     )
-"""
+
     # save the frame
     if !isdir(env.render_params["viz_dir"])
         mkdir(env.render_params["viz_dir"])
@@ -514,8 +515,8 @@ function render(
     # load and return the frame as an rgb array
     img = PyPlot.imread(filepath)
     return img
-"""
-    return frame
+
+    #return frame
 end
 
 # Raunak trying to add the original vehicle as a ghost car in the video
