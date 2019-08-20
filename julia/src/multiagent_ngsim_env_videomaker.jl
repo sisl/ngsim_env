@@ -7,14 +7,14 @@ export
     obs_names,
     render
 
-#=
+"""
 Description:
     Multiagent NGSIM env that plays NGSIM trajectories, allowing a variable
     number of agents to simultaneously control vehicles in the scene
 
     Raunak: This is basically a copy of multiagent_ngsim_env.jl with just
     a few additions to enable color coded video making
-=#
+"""
 mutable struct MultiagentNGSIMEnvVideoMaker <: Env
     trajdatas::Vector{ListRecord}
     trajinfos::Vector{Dict}
@@ -46,7 +46,7 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
             trajdatas::Union{Nothing, Vector{ListRecord}} = nothing,
             trajinfos::Union{Nothing, Vector{Dict}} = nothing,
             roadways::Union{Nothing, Vector{Roadway}} = nothing,
-            reclength::Int = 5,
+            reclength::Int = 100,
             Δt::Float64 = .1,
             primesteps::Int = 50,
             H::Int = 50,
@@ -101,7 +101,8 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
     end
 end
 
-#=
+"""
+    function reset
 Description:
     Reset the environment. Note that this environment maintains the following
     invariant attribute: at any given point, all vehicles currently being controlled
@@ -116,7 +117,7 @@ Args:
     - env: env to reset
     - dones: bool vector indicating which indices have reached a terminal state
         these must be either all true or all false
-=#
+"""
 function reset(
         env::MultiagentNGSIMEnvVideoMaker,
         dones::Vector{Bool} = fill!(Vector{Bool}(undef, env.n_veh), true);
@@ -127,17 +128,25 @@ function reset(
     @assert (all(dones) || all(.!dones))
     # first == all at this point, so if first is false, skip the reset
     if !dones[1]
+print("reset has been called but returned due to exit")
         return
     end
-
+print("reset is being called\n")
     # sample multiple ego vehicles
     # as stated above, these will all end at the same timestep
+
+"""
     env.traj_idx, env.egoids, env.t, env.h = sample_multiple_trajdata_vehicle(
         env.n_veh,
         env.trajinfos,
         offset,
         rseed=random_seed
     )
+"""
+env.traj_idx = 1
+env.t = 250
+env.egoids = [72,75,73,67,69,71,64,59,56,57,62,60,54,55,49,51,48,43,47,39,37,34,44,33,31]
+env.h = 600
 
     # update / reset containers
     env.epid += 1
@@ -160,6 +169,10 @@ function reset(
 
         env.ego_vehs[i] = env.scene[vehidx]
     end
+
+#@show env.egoids
+
+print("reset says env.t = $(env.t)\n")
     # set the roadway
     env.roadway = env.roadways[env.traj_idx]
     # env.t is the next timestep to load
@@ -169,21 +182,26 @@ function reset(
     return get_features(env)
 end
 
-#=
+"""
+    function _step!
 Description:
     Propagate a single vehicle through an otherwise predeterined trajdata
+
+Called by:
+- `step`
 
 Args:
     - env: environment to be stepped forward
     - action: array of floats that can be converted into an AccelTurnrate
-=#
+"""
 function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
+print("\n_step called\n")
     # make sure number of actions passed in equals number of vehicles
     @assert size(action, 1) == env.n_veh
     ego_states = Vector{VehicleState}(undef, env.n_veh)
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
-        # convert action into form
+	# convert action into form
 	ego_action = AccelTurnrate(action[i,:]...)
 	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
         # propagate the ego vehicle
@@ -196,7 +214,7 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
         # update the ego_veh
         env.ego_vehs[i] = Entity(ego_veh, ego_states[i])
     end
-
+print("_step says env.t = $(env.t)\n")
     # load the actual scene, and insert the vehicles into it
     get!(env.scene, env.trajdatas[env.traj_idx], env.t)
     if env.remove_ngsim_veh
@@ -216,39 +234,10 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
 	# replace the original with the controlled vehicle
 
         env.scene[vehidx] = env.ego_vehs[i]
-
-	# Raunak testing how to access lane id
-	# Commented out for now as not relevant to reward augmentation
-	# lane4print = env.ego_vehs[i].state.posF.roadind.tag.lane
-	# println("Lane number = $lane4print")
-
-	# Raunak's failed attempt at Ghost vehicle. The below treats both original
-	# and policy driven as real cars and ends up showing the both to be colliding
-	#push!(env.scene,env.ego_vehs[i])
     end
 
     # update rec with current scene
     update!(env.rec, env.scene)
-
-    # compute info about the step
-#    step_infos = Dict{String, Vector{Float64}}(
-#        "rmse_pos"=>Float64[],
-#        "rmse_vel"=>Float64[],
-#        "rmse_t"=>Float64[],
-#        "x"=>Float64[],
-#        "y"=>Float64[],
-#        "s"=>Float64[],
-#        "phi"=>Float64[],
-#    )
-#    for i in 1:env.n_veh
-#        push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
-#        push!(step_infos["rmse_vel"], sqrt(abs2((orig_vehs[i].state.v - env.ego_vehs[i].state.v))))
-#        push!(step_infos["rmse_t"], sqrt(abs2((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t))))
-#        push!(step_infos["x"], env.ego_vehs[i].state.posG.x)
-#        push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
-#        push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
-#        push!(step_infos["phi"], env.ego_vehs[i].state.posF.ϕ)
-#    end
 
     # Raunak adds in original vehicle properties
     step_infos = Dict{String, Vector{Float64}}(
@@ -283,6 +272,10 @@ function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
     return step_infos
 end
 
+"""
+    function _extract_rewards
+Provide reward augmentation to the vehicles
+"""
 function _extract_rewards(env::MultiagentNGSIMEnvVideoMaker, infos::Dict{String, Array{Float64}})
     rewards = zeros(env.n_veh)
     R = 0
@@ -299,7 +292,12 @@ function _extract_rewards(env::MultiagentNGSIMEnvVideoMaker, infos::Dict{String,
     return rewards
 end
 
+"""
+    function Base.step
+Step the environment forward by one step
+"""
 function Base.step(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
+print("\nBase.step called")
     step_infos = _step!(env, action)
 
     # compute features and feature_infos
@@ -323,6 +321,10 @@ function Base.step(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
     return deepcopy(env.features), rewards, terminal, infos
 end
 
+"""
+    function _compute_feature_infos
+Computes the information comparing original to policy driven vehicles
+"""
 function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Array{Float64};
                                                          accel_thresh::Float64=-3.0)
     feature_infos = Dict{String, Array{Float64}}(
@@ -379,7 +381,10 @@ function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Arr
     return feature_infos
 end
 
-
+"""
+    function AutoRisk.get_features
+Overload the get_features method defined in AutoRisk
+"""
 function AutoRisk.get_features(env::MultiagentNGSIMEnvVideoMaker)
     for (i, egoid) in enumerate(env.egoids)
 	#println("i=$i\n")
@@ -387,8 +392,6 @@ function AutoRisk.get_features(env::MultiagentNGSIMEnvVideoMaker)
     veh_idx = findfirst(egoid, env.scene)
 
     # TODO: Check for nothing
-
-
 
 	#println("veh_idx=$veh_idx")
 	pull_features!(env.ext, env.rec, env.roadway, veh_idx)
@@ -402,7 +405,10 @@ function AutoRisk.get_features(env::MultiagentNGSIMEnvVideoMaker)
     return deepcopy(env.features)
 end
 
-
+"""
+    function observation_space_spec(env::MultiagentNGSIMEnvVideoMaker)
+Generates the observation space specifications
+"""
 function observation_space_spec(env::MultiagentNGSIMEnvVideoMaker)
     low = zeros(length(env.ext))
     high = zeros(length(env.ext))
@@ -419,7 +425,33 @@ obs_names(env::MultiagentNGSIMEnvVideoMaker) = feature_names(env.ext)
 vectorized(env::MultiagentNGSIMEnvVideoMaker) = true
 num_envs(env::MultiagentNGSIMEnvVideoMaker) = env.n_veh
 
-# Raunak defined this render function to enable color changing based on collisions and offroads
+
+"""
+    IDOverlay
+Display the ID on top of each entity in a scene.
+# Fields
+- `color::Colorant`
+- `font_size::Int64`
+"""
+mutable struct IDOverlay <: SceneOverlay
+    color::Colorant
+    font_size::Int
+end
+
+function AutoViz.render!(rendermodel::RenderModel, overlay::IDOverlay, scene::Scene, 
+                            env::E) where E
+    font_size = overlay.font_size
+    for veh in scene
+        add_instruction!(rendermodel, render_text, ("$(veh.id)", veh.state.posG.x, 
+                        veh.state.posG.y, font_size, overlay.color), incameraframe=true)
+    end
+    return rendermodel
+end
+
+"""
+    function render
+Render the scene to enable making videos of driving behavior
+"""
 function render(
         env::MultiagentNGSIMEnvVideoMaker;
 	infos=Dict(),
@@ -469,8 +501,9 @@ function render(
     # Raunak commented this out because it was creating rays that were being used for
     # some research that Tim had been doing
     overlays = [
-        CarFollowingStatsOverlay(env.egoids[1], 2),
-	#IDOverlay(colorant"white",12)
+        #CarFollowingStatsOverlay(env.egoids[1], 2),
+	IDOverlay(colorant"white",12),
+	TextOverlay(text=["step=$(env.t)"],font_size = 14),
     #    NeighborsOverlay(env.egoids[1], textparams = TextParams(x = 600, y_start=300))
     ]
 
@@ -495,11 +528,14 @@ function render(
         env.roadway,
         overlays,
         rendermodel = rendermodel,
-        cam = cam,
+        cam = FitToContentCamera(-0.5),
         car_colors = carcolors,
         canvas_height=canvas_height,
         canvas_width=canvas_width
     )
+
+    # Save record to disk
+    _env_rec_write_jld(env)
 
     # save the frame
     if !isdir(env.render_params["viz_dir"])
@@ -517,6 +553,16 @@ function render(
     return img
 
     #return frame
+end
+
+"""
+    function env_rec_write_jld
+Write the record to a jld file. We will load the jld file into notebook for overlaying
+"""
+function _env_rec_write_jld(env::MultiagentNGSIMEnvVideoMaker)
+print("_env_rec_write_jld being called")
+    JLD.save("../../notebooks/env_rec.jld","env_rec",env.rec)
+    return nothing
 end
 
 # Raunak trying to add the original vehicle as a ghost car in the video

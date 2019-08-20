@@ -72,6 +72,7 @@ def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs
         
         if any(dones): break
         x = nx
+    
     return imgs
 
 
@@ -79,7 +80,7 @@ def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs
 #			FUNCTION: CREATE RENDER MAP
 #-----------------------------------------------------------------------------
 def create_render_map(model_labels, model_args_filepaths, model_params_filepaths, 
-                      multi=False, rand=None, max_steps=50, n_vehs=None, remove_ngsim=False):
+                      multi=False, rand=None, max_steps=100, n_vehs=None, remove_ngsim=False):
     render_map = dict()
     env_kwargs = dict()
     if rand != None:
@@ -110,8 +111,8 @@ def create_render_map(model_labels, model_args_filepaths, model_params_filepaths
                 args.remove_ngsim_veh = True
 
             if n_vehs:
-                args.n_envs = 100
-                args.n_vehs = 100
+                args.n_envs = n_vehs
+                args.n_vehs = n_vehs
         params = hgail.misc.utils.load_params(model_params_filepaths[i])
         print('\nparams loaded from {}'.format(model_params_filepaths[i]))
         
@@ -215,5 +216,5 @@ for i in range(1):
                        name=name, 
                        single_multi_comp=j, 
                        rand=seed,
-                       n_vehs=100)
+                       n_vehs=25)
         print("\nDone once.\n")

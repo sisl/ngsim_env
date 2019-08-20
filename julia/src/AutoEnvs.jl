@@ -9,6 +9,7 @@ using NGSIM
 using LinearAlgebra
 using Random
 using PyPlot
+using JLD
 
 import AutoViz: render
 import Base: reset, step
