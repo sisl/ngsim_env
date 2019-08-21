@@ -120,7 +120,8 @@ def build_ngsim_env(
         alpha=0.001,
         vectorize=False,
         render_params=None,
-        videoMaking=False):
+        videoMaking=False,
+        invoke_highd = False):
     basedir = os.path.expanduser('~/.julia/packages/NGSIM/9OYUa/data')
     filepaths = [os.path.join(basedir, args.ngsim_filename)]
     if render_params is None:
@@ -150,6 +151,9 @@ def build_ngsim_env(
         if videoMaking:
             print('RAUNAK BHATTACHARRYA VIDEO MAKER IS ON')
             env_id='MultiagentNGSIMEnvVideoMaker'
+        if invoke_highd:
+            print("HighD environment being made")
+            env_id = 'highd_env'
         alpha = alpha * args.n_envs
         normalize_wrapper = vectorized_normalized_env
     elif vectorize:

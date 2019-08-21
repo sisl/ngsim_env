@@ -119,7 +119,7 @@ def create_render_map(model_labels, model_args_filepaths, model_params_filepaths
         # load env and params
         # Raunak adding in an argument for videmaking
         # See build_ngsim_env in utils.py for what this does
-        env, _, _ = utils.build_ngsim_env(args,videoMaking=True)
+        env, _, _ = utils.build_ngsim_env(args,videoMaking=False,invoke_highd=True)
         normalized_env = hgail.misc.utils.extract_normalizing_env(env)
         if normalized_env is not None:
             normalized_env._obs_mean = params['normalzing']['obs_mean']
@@ -215,5 +215,5 @@ for i in range(1):
                        name=name, 
                        single_multi_comp=j, 
                        rand=seed,
-                       n_vehs=25)
+                       n_vehs=14)
         print("\nDone once.\n")

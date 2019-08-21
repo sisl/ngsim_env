@@ -1,5 +1,5 @@
 export
-    MultiagentNGSIMEnvVideoMaker,
+    highd_env,
     reset,
     step,
     observation_space_spec,
@@ -9,13 +9,19 @@ export
 
 """
 Description:
-    Multiagent NGSIM env that plays NGSIM trajectories, allowing a variable
+    HighD env that plays HighD trajectories, allowing a variable
     number of agents to simultaneously control vehicles in the scene
 
-    Raunak: This is basically a copy of multiagent_ngsim_env.jl with just
-    a few additions to enable color coded video making
+# Changes done to upstream files
+- utils.py build_ngsim_env
+	flag to switch between multiagentngsimenv,videomaker and highd
+- multiAgentMakeVideo.py 
+	similar flag
+- trajectory and roadway files moved into the imitation folder to enable
+highd_env to read the roadway and trajectory
+
 """
-mutable struct MultiagentNGSIMEnvVideoMaker <: Env
+mutable struct highd_env <: Env
     trajdatas::Vector{ListRecord}
     trajinfos::Vector{Dict}
     roadways::Vector{Roadway}
@@ -41,7 +47,7 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
     epid::Int # episode id
     render_params::Dict # rendering options
     infos_cache::Dict # cache for infos intermediate results
-    function MultiagentNGSIMEnvVideoMaker(
+    function highd_env(
             params::Dict;
             trajdatas::Union{Nothing, Vector{ListRecord}} = nothing,
             trajinfos::Union{Nothing, Vector{Dict}} = nothing,
@@ -50,7 +56,7 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
             Δt::Float64 = .1,
             primesteps::Int = 50,
             H::Int = 50,
-            n_veh::Int = 20,
+            n_veh::Int = 14,
             remove_ngsim_veh::Bool = false,
             render_params::Dict = Dict("zoom"=>5., "viz_dir"=>"/tmp"))
         param_keys = keys(params)
@@ -74,8 +80,17 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
             )
         end
 
+		# Overwrite with highd things
+	highd_traj = open(io->read(io, MIME"text/plain"(), Trajdata),
+pwd()*"/trajdata_Data11_Road1_nLIOD3_lower.txt", "r");
+	trajdatas = [highd_traj]
+	
+	highd_roadway = open(io->read(io, MIME"text/plain"(), Roadway),
+pwd()*"/highd_roadway.txt", "r")
+	roadways = [highd_roadway]
+
         # build components
-        scene_length = max_n_objects(trajdatas)
+        scene_length = 500
         scene = Scene(scene_length)
         rec = SceneRecord(reclength, Δt, scene_length)
         ext = build_feature_extractor(params)
@@ -119,7 +134,7 @@ Args:
         these must be either all true or all false
 """
 function reset(
-        env::MultiagentNGSIMEnvVideoMaker,
+        env::highd_env,
         dones::Vector{Bool} = fill!(Vector{Bool}(undef, env.n_veh), true);
         offset::Int=env.H + env.primesteps,
         random_seed::Union{Nothing, Int} = nothing)
@@ -131,10 +146,9 @@ function reset(
 print("reset has been called but returned due to exit")
         return
     end
-print("reset is being called\n")
+
     # sample multiple ego vehicles
     # as stated above, these will all end at the same timestep
-
 """
     env.traj_idx, env.egoids, env.t, env.h = sample_multiple_trajdata_vehicle(
         env.n_veh,
@@ -144,8 +158,8 @@ print("reset is being called\n")
     )
 """
 env.traj_idx = 1
-env.t = 250
-env.egoids = [72,75,73,67,69,71,64,59,56,57,62,60,54,55,49,51,48,43,47,39,37,34,44,33,31]
+env.t = 0
+env.egoids = [23,27,20,21,19,17,35,14,13,11,10,6,9,3]
 env.h = 600
 
     # update / reset containers
@@ -155,7 +169,7 @@ env.h = 600
 
     # prime
     for t in env.t:(env.t + env.primesteps)
-        get!(env.scene, env.trajdatas[env.traj_idx], t)
+	get!(env.scene, env.trajdatas[1], t)
         if env.remove_ngsim_veh
             keep_vehicle_subset!(env.scene, env.egoids)
         end
@@ -170,11 +184,9 @@ env.h = 600
         env.ego_vehs[i] = env.scene[vehidx]
     end
 
-#@show env.egoids
-
 print("reset says env.t = $(env.t)\n")
     # set the roadway
-    env.roadway = env.roadways[env.traj_idx]
+    env.roadway = env.roadways[1]
     # env.t is the next timestep to load
     env.t += env.primesteps + 1
     # enforce a maximum horizon
@@ -194,25 +206,18 @@ Args:
     - env: environment to be stepped forward
     - action: array of floats that can be converted into an AccelTurnrate
 """
-function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
+function _step!(env::highd_env, action::Array{Float64})
 print("\n_step called\n")
     # make sure number of actions passed in equals number of vehicles
     @assert size(action, 1) == env.n_veh
     ego_states = Vector{VehicleState}(undef, env.n_veh)
+@show env.ego_vehs
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
 	# convert action into form
 	ego_action = AccelTurnrate(action[i,:]...)
 	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
-        
-	# Artificial barrier car creation
-	if ego_veh.id == 39 || ego_veh.id == 51
-		print("Found a barrier worthy car, id = $(ego_veh.id)\n")
-		drivermodel = IntelligentDriverModel(v_des = 0.)
-		observe!(drivermodel,env.scene,env.roadway,ego_veh.id)
-		ego_action = rand(drivermodel)
-	end
-
+print("_step! says: ego_veh.id = $(ego_veh.id)\n")
 	# propagate the ego vehicle
         ego_states[i] = propagate(
             ego_veh,
@@ -282,7 +287,7 @@ end
     function _extract_rewards
 Provide reward augmentation to the vehicles
 """
-function _extract_rewards(env::MultiagentNGSIMEnvVideoMaker, infos::Dict{String, Array{Float64}})
+function _extract_rewards(env::highd_env, infos::Dict{String, Array{Float64}})
     rewards = zeros(env.n_veh)
     R = 0
 
@@ -302,7 +307,7 @@ end
     function Base.step
 Step the environment forward by one step
 """
-function Base.step(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
+function Base.step(env::highd_env, action::Array{Float64})
 print("\nBase.step called")
     step_infos = _step!(env, action)
 
@@ -331,7 +336,7 @@ end
     function _compute_feature_infos
 Computes the information comparing original to policy driven vehicles
 """
-function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Array{Float64};
+function _compute_feature_infos(env::highd_env, features::Array{Float64};
                                                          accel_thresh::Float64=-3.0)
     feature_infos = Dict{String, Array{Float64}}(
                 "is_colliding"=>Float64[],
@@ -376,7 +381,7 @@ end
     function AutoRisk.get_features
 Overload the get_features method defined in AutoRisk
 """
-function AutoRisk.get_features(env::MultiagentNGSIMEnvVideoMaker)
+function AutoRisk.get_features(env::highd_env)
     for (i, egoid) in enumerate(env.egoids)
 	#println("i=$i\n")
 	#println("egoid = $egoid\n")
@@ -395,7 +400,7 @@ end
     function observation_space_spec(env::MultiagentNGSIMEnvVideoMaker)
 Generates the observation space specifications
 """
-function observation_space_spec(env::MultiagentNGSIMEnvVideoMaker)
+function observation_space_spec(env::highd_env)
     low = zeros(length(env.ext))
     high = zeros(length(env.ext))
     feature_infos = feature_info(env.ext)
@@ -406,10 +411,10 @@ function observation_space_spec(env::MultiagentNGSIMEnvVideoMaker)
     infos = Dict("high"=>high, "low"=>low)
     return (length(env.ext),), "Box", infos
 end
-action_space_spec(env::MultiagentNGSIMEnvVideoMaker) = (2,), "Box", Dict("high"=>[4.,.15], "low"=>[-4.,-.15])
-obs_names(env::MultiagentNGSIMEnvVideoMaker) = feature_names(env.ext)
-vectorized(env::MultiagentNGSIMEnvVideoMaker) = true
-num_envs(env::MultiagentNGSIMEnvVideoMaker) = env.n_veh
+action_space_spec(env::highd_env) = (2,), "Box", Dict("high"=>[4.,.15], "low"=>[-4.,-.15])
+obs_names(env::highd_env) = feature_names(env.ext)
+vectorized(env::highd_env) = true
+num_envs(env::highd_env) = env.n_veh
 
 
 """
@@ -439,7 +444,7 @@ end
 Render the scene to enable making videos of driving behavior
 """
 function render(
-        env::MultiagentNGSIMEnvVideoMaker;
+        env::highd_env;
 	infos=Dict(),
         egocolor::Vector{Float64}=[0.,0.,1.],
         camtype::String="follow",
@@ -545,7 +550,7 @@ end
     function env_rec_write_jld
 Write the record to a jld file. We will load the jld file into notebook for overlaying
 """
-function _env_rec_write_jld(env::MultiagentNGSIMEnvVideoMaker)
+function _env_rec_write_jld(env::highd_env)
 print("_env_rec_write_jld being called")
     JLD.save("../../notebooks/env_rec.jld","env_rec",env.rec)
     return nothing
