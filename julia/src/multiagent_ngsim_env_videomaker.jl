@@ -204,7 +204,16 @@ print("\n_step called\n")
 	# convert action into form
 	ego_action = AccelTurnrate(action[i,:]...)
 	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
-        # propagate the ego vehicle
+        
+	# Artificial barrier car creation
+	if ego_veh.id == 39 || ego_veh.id == 51
+		print("Found a barrier worthy car, id = $(ego_veh.id)\n")
+		drivermodel = IntelligentDriverModel(v_des = 0.)
+		observe!(drivermodel,env.scene,env.roadway,ego_veh.id)
+		ego_action = rand(drivermodel)
+	end
+
+	# propagate the ego vehicle
         ego_states[i] = propagate(
             ego_veh,
             ego_action,
@@ -223,16 +232,13 @@ print("_step says env.t = $(env.t)\n")
     orig_vehs = Vector{Vehicle}(undef, env.n_veh)
 
     for (i, egoid) in enumerate(env.egoids)
+	vehidx = findfirst(egoid, env.scene)
+	# TODO: Check for nothing
 
-    vehidx = findfirst(egoid, env.scene)
-    # TODO: Check for nothing
-
-    # track the original vehicle for validation / infos purposes
-
-    orig_vehs[i] = env.scene[vehidx]
+	# track the original vehicle for validation / infos purposes
+	orig_vehs[i] = env.scene[vehidx]
 
 	# replace the original with the controlled vehicle
-
         env.scene[vehidx] = env.ego_vehs[i]
     end
 
@@ -349,13 +355,6 @@ function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Arr
     #println("env.infos_cache[is_colliding_idx]=$somethingelse")
 
     for i in 1:env.n_veh
-	# Raunak debugging
-	#println("i=$i\n")
-	#egoVehid = env.ego_vehs[i].id
-	#println("egoVeh[i] = $egoVehid")
-	#infos_cache = env.infos_cache
-	#println("env.infos_cache = $infos_cache")
-
 	is_colliding = features[i, env.infos_cache["is_colliding_idx"]]
 	#println("is_colliding=$is_colliding\n")
 	is_offroad = features[i, env.infos_cache["out_of_lane_idx"]]
@@ -393,14 +392,9 @@ function AutoRisk.get_features(env::MultiagentNGSIMEnvVideoMaker)
 
     # TODO: Check for nothing
 
-	#println("veh_idx=$veh_idx")
 	pull_features!(env.ext, env.rec, env.roadway, veh_idx)
         env.features[i, :] = deepcopy(env.ext.features)
 
-	# Raunak checking whether lane_id got added as a feature
-	# Does changing code in the julia folder automatically reflect
-	#feature4print = env.ext.features
-	#println("features are $feature4print")
     end
     return deepcopy(env.features)
 end
