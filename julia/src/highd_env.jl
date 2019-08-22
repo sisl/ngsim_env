@@ -56,7 +56,7 @@ mutable struct highd_env <: Env
             Δt::Float64 = .1,
             primesteps::Int = 50,
             H::Int = 50,
-            n_veh::Int = 14,
+            n_veh::Int = 5,
             remove_ngsim_veh::Bool = false,
             render_params::Dict = Dict("zoom"=>5., "viz_dir"=>"/tmp"))
         param_keys = keys(params)
@@ -159,7 +159,7 @@ print("reset has been called but returned due to exit")
 """
 env.traj_idx = 1
 env.t = 0
-env.egoids = [23,27,20,21,19,17,35,14,13,11,10,6,9,3]
+env.egoids = [11,13,14,17,19,20,21,23,27,35,38,39,40,41]
 env.h = 600
 
     # update / reset containers
@@ -519,7 +519,7 @@ function render(
         env.roadway,
         overlays,
         rendermodel = rendermodel,
-        cam = FitToContentCamera(-0.5),
+        cam = FitToContentCamera(0.),
         car_colors = carcolors,
         canvas_height=canvas_height,
         canvas_width=canvas_width

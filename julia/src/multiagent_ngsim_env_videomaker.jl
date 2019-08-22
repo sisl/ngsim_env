@@ -205,12 +205,13 @@ print("\n_step called\n")
 	ego_action = AccelTurnrate(action[i,:]...)
 	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
         
+	stored_ego_state = ego_veh.state
 	# Artificial barrier car creation
 	if ego_veh.id == 39 || ego_veh.id == 51
 		print("Found a barrier worthy car, id = $(ego_veh.id)\n")
-		drivermodel = IntelligentDriverModel(v_des = 0.)
-		observe!(drivermodel,env.scene,env.roadway,ego_veh.id)
-		ego_action = rand(drivermodel)
+		#drivermodel = IntelligentDriverModel(v_des = 0.)
+		#observe!(drivermodel,env.scene,env.roadway,ego_veh.id)
+		#ego_action = rand(drivermodel)
 	end
 
 	# propagate the ego vehicle
@@ -220,6 +221,12 @@ print("\n_step called\n")
             env.roadway,
             env.Δt
         )
+
+	# Artificial barrier car creation
+	if ego_veh.id == 39 || ego_veh.id == 51
+		ego_states[i] = stored_ego_state
+	end
+
         # update the ego_veh
         env.ego_vehs[i] = Entity(ego_veh, ego_states[i])
     end

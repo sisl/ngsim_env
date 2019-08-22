@@ -80,7 +80,7 @@ def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs
 #			FUNCTION: CREATE RENDER MAP
 #-----------------------------------------------------------------------------
 def create_render_map(model_labels, model_args_filepaths, model_params_filepaths, 
-                      multi=False, rand=None, max_steps=40, n_vehs=None, remove_ngsim=False):
+                      multi=False, rand=None, max_steps=80, n_vehs=None, remove_ngsim=False):
     render_map = dict()
     env_kwargs = dict()
     if rand != None:
@@ -112,7 +112,7 @@ def create_render_map(model_labels, model_args_filepaths, model_params_filepaths
 
             if n_vehs:
                 args.n_envs = n_vehs
-                args.n_vehs = n_vehs
+                args.n_veh = n_vehs
         params = hgail.misc.utils.load_params(model_params_filepaths[i])
         print('\nparams loaded from {}'.format(model_params_filepaths[i]))
         
