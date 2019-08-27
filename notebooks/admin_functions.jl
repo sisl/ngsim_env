@@ -337,6 +337,7 @@ Written with the goal of being able to scatter plot the particles
 `to_matrix_form` was returning Adjoint. This one returns a plane and simple 2D array
 
 # Example
+```julia
 num_particles = 100
 lane_place_array = [[(0.,10.)],[(0.,20.)],[(0.,15.)],[(0.,20.)],[(0.,20.)]]
 num_cars = 5
@@ -348,6 +349,7 @@ particle_props = [(:v_des,10.,0.1,30.),(:σ,0.1,0.1,1.)]
 bucket_array = initialize_carwise_particle_buckets(num_cars,num_particles,particle_props)
 p_set = bucket_array[1]
 to_particleMatrix(p_set)
+```
 """
 function to_particleMatrix(p_set)
 	num_params = length(keys(p_set))
