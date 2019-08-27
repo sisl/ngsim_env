@@ -10,6 +10,7 @@ using LinearAlgebra
 using Random
 using PyPlot
 using JLD
+using DelimitedFiles
 
 import AutoViz: render
 import Base: reset, step

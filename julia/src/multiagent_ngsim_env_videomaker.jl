@@ -205,14 +205,15 @@ print("\n_step called\n")
 	ego_action = AccelTurnrate(action[i,:]...)
 	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
         
-	stored_ego_state = ego_veh.state
-	# Artificial barrier car creation
-	if ego_veh.id == 39 || ego_veh.id == 51
-		print("Found a barrier worthy car, id = $(ego_veh.id)\n")
-		#drivermodel = IntelligentDriverModel(v_des = 0.)
-		#observe!(drivermodel,env.scene,env.roadway,ego_veh.id)
-		#ego_action = rand(drivermodel)
-	end
+	
+# Artificial barrier car creation
+#	stored_ego_state = ego_veh.state
+#	if ego_veh.id == 39 || ego_veh.id == 51
+#		print("Found a barrier worthy car, id = $(ego_veh.id)\n")
+#		drivermodel = IntelligentDriverModel(v_des = 0.)
+#		observe!(drivermodel,env.scene,env.roadway,ego_veh.id)
+#		ego_action = rand(drivermodel)
+#	end
 
 	# propagate the ego vehicle
         ego_states[i] = propagate(
@@ -222,10 +223,10 @@ print("\n_step called\n")
             env.Δt
         )
 
-	# Artificial barrier car creation
-	if ego_veh.id == 39 || ego_veh.id == 51
-		ego_states[i] = stored_ego_state
-	end
+# Artificial barrier car creation
+#	if ego_veh.id == 39 || ego_veh.id == 51
+#		ego_states[i] = stored_ego_state
+#	end
 
         # update the ego_veh
         env.ego_vehs[i] = Entity(ego_veh, ego_states[i])
@@ -254,32 +255,39 @@ print("_step says env.t = $(env.t)\n")
 
     # Raunak adds in original vehicle properties
     step_infos = Dict{String, Vector{Float64}}(
-        #"rmse_pos"=>Float64[],
-        #"rmse_vel"=>Float64[],
+        "rmse_pos"=>Float64[],
+        "rmse_vel"=>Float64[],
         #"rmse_t"=>Float64[],
-        "x"=>Float64[],
-        "y"=>Float64[],
-        "s"=>Float64[],
-        "phi"=>Float64[],
-	"orig_x"=>Float64[],
-	"orig_y"=> Float64[],
-	"orig_theta"=>Float64[],
-	"orig_length"=>Float64[],
-	"orig_width"=>Float64[]
+        #"x"=>Float64[],
+        #"y"=>Float64[],
+        #"s"=>Float64[],
+        #"phi"=>Float64[],
+	#"orig_x"=>Float64[],
+	#"orig_y"=> Float64[],
+	#"orig_theta"=>Float64[],
+	#"orig_length"=>Float64[],
+	#"orig_width"=>Float64[]
     )
     for i in 1:env.n_veh
-        #push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
-        #push!(step_infos["rmse_vel"], sqrt(abs2((orig_vehs[i].state.v - env.ego_vehs[i].state.v))))
+        push!(step_infos["rmse_pos"], norm(orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))
+        push!(step_infos["rmse_vel"], norm(orig_vehs[i].state.v - env.ego_vehs[i].state.v))
         #push!(step_infos["rmse_t"], sqrt(abs2((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t))))
-        push!(step_infos["x"], env.ego_vehs[i].state.posG.x)
-        push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
-        push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
-        push!(step_infos["phi"], env.ego_vehs[i].state.posF.ϕ)
-	push!(step_infos["orig_x"], orig_vehs[i].state.posG.x)
-	push!(step_infos["orig_y"], orig_vehs[i].state.posG.y)
-	push!(step_infos["orig_theta"], orig_vehs[i].state.posG.θ)
-	push!(step_infos["orig_length"], orig_vehs[i].def.length)
-	push!(step_infos["orig_width"], orig_vehs[i].def.width)
+        #push!(step_infos["x"], env.ego_vehs[i].state.posG.x)
+        #push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
+        #push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
+        #push!(step_infos["phi"], env.ego_vehs[i].state.posF.ϕ)
+	#push!(step_infos["orig_x"], orig_vehs[i].state.posG.x)
+	#push!(step_infos["orig_y"], orig_vehs[i].state.posG.y)
+	#push!(step_infos["orig_theta"], orig_vehs[i].state.posG.θ)
+	#push!(step_infos["orig_length"], orig_vehs[i].def.length)
+	#push!(step_infos["orig_width"], orig_vehs[i].def.width)
+    end
+
+    # Raunak: Write rmse metrics to txt. Will be read into `idm_ngsim.ipynb` to compare against filtering
+    for (k,v) in step_infos
+        io = open(string(k*".txt"),"a")
+        writedlm(io,v')
+        close(io)
     end
 
     return step_infos
