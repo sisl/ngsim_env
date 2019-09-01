@@ -41,6 +41,8 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
     epid::Int # episode id
     render_params::Dict # rendering options
     infos_cache::Dict # cache for infos intermediate results
+
+    store_scenes::Array{Scene}
     function MultiagentNGSIMEnvVideoMaker(
             params::Dict;
             trajdatas::Union{Nothing, Vector{ListRecord}} = nothing,
@@ -86,6 +88,8 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
         features = zeros(n_veh, length(ext))
         egoids = zeros(n_veh)
         ego_vehs = [nothing for _ in 1:n_veh]
+
+	store_scenes = []
         return new(
             trajdatas,
             trajinfos,
@@ -96,7 +100,7 @@ mutable struct MultiagentNGSIMEnvVideoMaker <: Env
             ext,
             egoids, ego_vehs, 0, 0, 0, H, primesteps, Δt,
             n_veh, remove_ngsim_veh, features,
-            0, render_params, infos_cache
+            0, render_params, infos_cache,store_scenes
         )
     end
 end
@@ -250,6 +254,9 @@ print("_step says env.t = $(env.t)\n")
         env.scene[vehidx] = env.ego_vehs[i]
     end
 
+	# RpB: Store the scene
+push!(env.store_scenes,deepcopy(env.scene))
+
     # update rec with current scene
     update!(env.rec, env.scene)
 
@@ -285,7 +292,7 @@ print("_step says env.t = $(env.t)\n")
 
     # Raunak: Write rmse metrics to txt. Will be read into `idm_ngsim.ipynb` to compare against filtering
     for (k,v) in step_infos
-        io = open(string(k*".txt"),"a")
+        io = open(string(k*"_ngsim.txt"),"a")
         writedlm(io,v')
         close(io)
     end
@@ -536,7 +543,7 @@ function render(
     )
 
     # Save record to disk
-    _env_rec_write_jld(env)
+    _save_store_scenes(env)
 
     # save the frame
     if !isdir(env.render_params["viz_dir"])
@@ -560,9 +567,9 @@ end
     function env_rec_write_jld
 Write the record to a jld file. We will load the jld file into notebook for overlaying
 """
-function _env_rec_write_jld(env::MultiagentNGSIMEnvVideoMaker)
-print("_env_rec_write_jld being called")
-    JLD.save("../../notebooks/env_rec.jld","env_rec",env.rec)
+function _save_store_scenes(env::MultiagentNGSIMEnvVideoMaker)
+print("_save_store_scenes being called\n")
+    JLD.save("../../notebooks/store_scenes.jld","store_scenes",env.store_scenes)
     return nothing
 end
 
