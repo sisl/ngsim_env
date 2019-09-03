@@ -25,9 +25,8 @@ import validate
 #			Directory specifications and paths
 #-----------------------------------------------------------------------------
 basedir = '../../data/experiments/'
-model_labels = [
-    'rails_smoothed_off_brake_3000_1_fine'
-]
+#model_labels = ['rails_smoothed_off_brake_3000_1_fine']
+model_labels = ['multiagent_curr_1_fine']
 itrs = [
     200
 ]
@@ -61,8 +60,7 @@ def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs
         nx, r, dones, e_info = env.step(a)
         traj.add(x, a, r, a_info, e_info)
 
-        # Adding in the features as an argument to render 
-        # to enable collision, offroad and ghost car
+        # Adding in the `infos` to enable visuals of collision, offroad and ghost car
         render_kwargs['infos']=e_info
         
         # Raunak's version of render within multiagent_ngsim_env.jl that allows coloring

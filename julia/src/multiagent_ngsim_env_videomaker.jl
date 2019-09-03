@@ -147,7 +147,7 @@ env.traj_idx = 1
 #env.h = 600
 
 	# Scenario 2: Frame number 2000 to 2090
-env.t = 1950
+env.t = 1949
 env.egoids = [756,758,759,761,762,763,765,767,771,773,775,776,778,779,782,784,785]
 env.h = 2400
 
