@@ -132,25 +132,24 @@ function reset(
     @assert (all(dones) || all(.!dones))
     # first == all at this point, so if first is false, skip the reset
     if !dones[1]
-print("reset has been called but returned due to exit")
+print("reset has been called but returned due to exit\n")
         return
     end
 print("reset is being called\n")
     # sample multiple ego vehicles
     # as stated above, these will all end at the same timestep
 
-"""
-    env.traj_idx, env.egoids, env.t, env.h = sample_multiple_trajdata_vehicle(
-        env.n_veh,
-        env.trajinfos,
-        offset,
-        rseed=random_seed
-    )
-"""
 env.traj_idx = 1
-env.t = 250
-env.egoids = [72,75,73,67,69,71,64,59,56,57,62,60,54,55,49,51,48,43,47,39,37,34,44,33,31]
-env.h = 600
+
+	# Scenario 1: Frame number 300 to 375
+#env.t = 250
+#env.egoids = [72,75,73,67,69,71,64,59,56,57,62,60,54,55,49,51,48,43,47,39,37,34,44,33,31]
+#env.h = 600
+
+	# Scenario 2: Frame number 2000 to 2090
+env.t = 1950
+env.egoids = [756,758,759,761,762,763,765,767,771,773,775,776,778,779,782,784,785]
+env.h = 2400
 
     # update / reset containers
     env.epid += 1
@@ -205,11 +204,13 @@ print("\n_step called\n")
     ego_states = Vector{VehicleState}(undef, env.n_veh)
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
+	if isnothing(ego_veh) continue end
+
 	# convert action into form
 	ego_action = AccelTurnrate(action[i,:]...)
 	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
         
-	
+
 # Artificial barrier car creation
 #	stored_ego_state = ego_veh.state
 #	if ego_veh.id == 39 || ego_veh.id == 51
@@ -276,6 +277,7 @@ push!(env.store_scenes,deepcopy(env.scene))
 	#"orig_width"=>Float64[]
     )
     for i in 1:env.n_veh
+	if isnothing(env.ego_vehs[i]) continue end
         push!(step_infos["rmse_pos"], norm(orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))
         push!(step_infos["rmse_vel"], norm(orig_vehs[i].state.v - env.ego_vehs[i].state.v))
         #push!(step_infos["rmse_t"], sqrt(abs2((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t))))
@@ -291,11 +293,11 @@ push!(env.store_scenes,deepcopy(env.scene))
     end
 
     # Raunak: Write rmse metrics to txt. Will be read into `idm_ngsim.ipynb` to compare against filtering
-    for (k,v) in step_infos
-        io = open(string(k*"_ngsim.txt"),"a")
-        writedlm(io,v')
-        close(io)
-    end
+#    for (k,v) in step_infos
+#        io = open(string(k*"_ngsim.txt"),"a")
+#        writedlm(io,v')
+#        close(io)
+#    end
 
     return step_infos
 end
@@ -569,40 +571,6 @@ Write the record to a jld file. We will load the jld file into notebook for over
 """
 function _save_store_scenes(env::MultiagentNGSIMEnvVideoMaker)
 print("_save_store_scenes being called\n")
-    JLD.save("../../notebooks/store_scenes.jld","store_scenes",env.store_scenes)
+    JLD.save("../../notebooks/gail_scenes.jld","gail_scenes",env.store_scenes)
     return nothing
 end
-
-# Raunak trying to add the original vehicle as a ghost car in the video
-# Erroring out when defined here. Worked fine when defined within AutoViz/src/2d/Overlays.jl
-# which is the same location where CarFollowingStatsOverlay is defined
-#mutable struct OrigVehicleOverlay <: SceneOverlay
-	# structure attributes here
-#	x::Float64
-#	y::Float64
-#	theta::Float64
-#	length::Float64
-#	width::Float64
-#	color::Colorant
-
-	# constructor function
-
-#	function OrigVehicleOverlay(x::Float64,y::Float64,theta::Float64,length::Float64,
-#				    width::Float64,color::Colorant=colorant"white")
-#	new(x,y,theta,length,width,color)
-#	end
-#end
-
-# Better have this function signature exactly same as CarFollowingStatsOverlay
-#function render!(rendermodel::RenderModel,overlay::OrigVehicleOverlay,scene::Scene, roadway::Roadway)
-#	verbose = true
-#	if verbose
-#		println("render! within OrigVehicleOverlay reporting here")
-#		x=overlay.x
-#		y=overlay.y
-#		println("x=$x,y = $y")
-#	end
-#   add_instruction!(rendermodel, render_vehicle, (overlay.x, overlay.y, overlay.theta,
-#						   overlay.length, overlay.width, overlay.color))
-#    return rendermodel
-#end
