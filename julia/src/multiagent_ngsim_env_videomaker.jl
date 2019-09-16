@@ -139,7 +139,20 @@ print("reset is being called\n")
     # sample multiple ego vehicles
     # as stated above, these will all end at the same timestep
 
-env.traj_idx = 1
+	#****************Begin: sample vehicles that drive together***********
+#@show env.n_veh,offset,random_seed
+offset=50
+    env.traj_idx, env.egoids, env.t, env.h = sample_multiple_trajdata_vehicle(
+        env.n_veh,
+        env.trajinfos,
+        offset,
+        rseed=random_seed
+    )
+#@show env.egoids
+#@show env.t env.h
+
+	#************Begin: Hard coded scenarios**********************
+# env.traj_idx = 1
 
 	# Scenario 1: Frame number 300 to 375
 #env.t = 250
@@ -147,9 +160,18 @@ env.traj_idx = 1
 #env.h = 600
 
 	# Scenario 2: Frame number 2000 to 2090
-env.t = 1949
-env.egoids = [756,758,759,761,762,763,765,767,771,773,775,776,778,779,782,784,785]
-env.h = 2400
+#env.t = 1949
+#env.egoids = [756,758,759,761,762,763,765,767,771,773,775,776,778,779,782,784,785]
+#env.h = 2400
+
+	# Scenario 3 Dense traffic: Frame number 1000 to 1100
+#env.t = 949
+#env.egoids = [298,302,322,363,376,396,397,404,417,422,427,442,451]
+#env.h = 1400
+
+
+#******************End: Hard coded scenarios**********************
+
 
     # update / reset containers
     env.epid += 1
@@ -179,7 +201,7 @@ print("reset says env.t = $(env.t)\n")
     # set the roadway
     env.roadway = env.roadways[env.traj_idx]
     # env.t is the next timestep to load
-    env.t += env.primesteps + 1
+    #env.t += env.primesteps + 1
     # enforce a maximum horizon
     env.h = min(env.h, env.t + env.H)
     return get_features(env)
@@ -199,6 +221,8 @@ Args:
 """
 function _step!(env::MultiagentNGSIMEnvVideoMaker, action::Array{Float64})
 print("\n_step called\n")
+const_vel = false
+const_accl = false
     # make sure number of actions passed in equals number of vehicles
     @assert size(action, 1) == env.n_veh
     ego_states = Vector{VehicleState}(undef, env.n_veh)
@@ -208,7 +232,15 @@ print("\n_step called\n")
 
 	# convert action into form
 	ego_action = AccelTurnrate(action[i,:]...)
-	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
+	
+		# Constant vel/accl model
+	if const_vel
+		print("Const velocity model \n")		
+		ego_action = LaneFollowingAccel(0.)
+	elseif const_accl
+		print("Const acceleration model\n")
+		ego_action = LaneFollowingAccel(1.)
+	end
         
 
 # Artificial barrier car creation
@@ -293,11 +325,11 @@ push!(env.store_scenes,deepcopy(env.scene))
     end
 
     # Raunak: Write rmse metrics to txt. Will be read into `idm_ngsim.ipynb` to compare against filtering
-#    for (k,v) in step_infos
-#        io = open(string(k*"_ngsim.txt"),"a")
-#        writedlm(io,v')
-#        close(io)
-#    end
+    for (k,v) in step_infos
+        io = open(string("../../data/media/"*k*"_ngsim.txt"),"a")
+        writedlm(io,v')
+        close(io)
+    end
 
     return step_infos
 end
@@ -365,14 +397,12 @@ function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Arr
 		"offroad_veh_ids"=>Float64[],
 		"hardbrake_veh_ids"=>Float64[]
 		)
-
-    # Raunak explains: env.n_veh will be number of policy driven cars
-    # Caution: This need not be the same as number of cars in the scene
-    # Because the scene contains both policy driven cars and ngsim replay cars
+    collision_count = 0
+    offroad_count = 0
+    hardbrake_count = 0
 
     for i in 1:env.n_veh
 	is_colliding = features[i, env.infos_cache["is_colliding_idx"]]
-	#println("is_colliding=$is_colliding\n")
 	is_offroad = features[i, env.infos_cache["out_of_lane_idx"]]
         accel = features[i, env.infos_cache["accel_idx"]]
         push!(feature_infos["hard_brake"], accel <= accel_thresh)
@@ -382,17 +412,23 @@ function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Arr
 	# Raunak adding list of colliding ego ids into the feature list that gets passed to render
 	if is_colliding==1
 		push!(feature_infos["colliding_veh_ids"],env.ego_vehs[i].id)
-		#println("Collision has happened see red")
+		#println("vehid = $(env.ego_vehs[i].id). Collision has happened see red\n")
+		collision_count+=1
 	end
 	if is_offroad==1
 		push!(feature_infos["offroad_veh_ids"],env.ego_vehs[i].id)
 		#println("Offroad has happened see yellow")
+		offroad_count+=1
 	end
 	if accel <= accel_thresh
 		push!(feature_infos["hardbrake_veh_ids"],env.ego_vehs[i].id)
-		#println("Hard brake has happened see some color")
+		#println("vehid = $(env.ego_vehs[i].id). Hard brake has happened")
+		hardbrake_count+=1
 	end
     end
+	io = open("../../data/media/undesirable_instances_ngsim_gail.txt","a")
+        writedlm(io,[collision_count,offroad_count,hardbrake_count]')
+        close(io)
     return feature_infos
 end
 
@@ -402,9 +438,7 @@ Overload the get_features method defined in AutoRisk
 """
 function AutoRisk.get_features(env::MultiagentNGSIMEnvVideoMaker)
     for (i, egoid) in enumerate(env.egoids)
-	#println("i=$i\n")
-	#println("egoid = $egoid\n")
-    veh_idx = findfirst(egoid, env.scene)
+	veh_idx = findfirst(egoid, env.scene)
 
     # TODO: Check for nothing
 
@@ -538,14 +572,14 @@ function render(
         env.roadway,
         overlays,
         rendermodel = rendermodel,
-        cam = FitToContentCamera(-0.5),
+        cam = FitToContentCamera(-1.5),
         car_colors = carcolors,
         canvas_height=canvas_height,
         canvas_width=canvas_width
     )
 
     # Save record to disk
-    _save_store_scenes(env)
+    #_save_store_scenes(env)
 
     # save the frame
     if !isdir(env.render_params["viz_dir"])
@@ -570,7 +604,8 @@ end
 Write the record to a jld file. We will load the jld file into notebook for overlaying
 """
 function _save_store_scenes(env::MultiagentNGSIMEnvVideoMaker)
-print("_save_store_scenes being called\n")
-    JLD.save("../../notebooks/gail_scenes.jld","gail_scenes",env.store_scenes)
+filename = "../../notebooks/gail_scenes_timepass.jld"
+print("storing scenes in $(filename)\n")
+    JLD.save(filename,"gail_scenes",env.store_scenes)
     return nothing
 end

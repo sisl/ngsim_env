@@ -25,8 +25,8 @@ import validate
 #			Directory specifications and paths
 #-----------------------------------------------------------------------------
 basedir = '../../data/experiments/'
-#model_labels = ['rails_smoothed_off_brake_3000_1_fine']
-model_labels = ['multiagent_curr_1_fine']
+model_labels = ['rails_smoothed_off_brake_3000_1_fine']
+#model_labels = ['multiagent_curr_1_fine']
 itrs = [
     200
 ]
@@ -78,7 +78,7 @@ def mutliagent_simulate(env, policy, max_steps, env_kwargs=dict(), render_kwargs
 #			FUNCTION: CREATE RENDER MAP
 #-----------------------------------------------------------------------------
 def create_render_map(model_labels, model_args_filepaths, model_params_filepaths, 
-                      multi=False, rand=None, max_steps=100, n_vehs=None, remove_ngsim=False):
+                      multi=False, rand=None, max_steps=50, n_vehs=None, remove_ngsim=False):
     render_map = dict()
     env_kwargs = dict()
     if rand != None:
@@ -202,7 +202,7 @@ def do_it_all_once(model_labels, model_args_filepaths, model_params_filepaths,
 #-----------------------------------------------------------------------------
 for i in range(1):
     print("\Run number: ", i)
-    seed = 2
+    seed = 33
     for j in [1]: #number of models to 'average'
         indx = (j-1)*2
         name = "-".join(model_labels[indx:indx+1])+'_'+str(i)+"_"+str(seed)
@@ -213,5 +213,6 @@ for i in range(1):
                        name=name, 
                        single_multi_comp=j, 
                        rand=seed,
-                       n_vehs=25)
+                       n_vehs=20,
+		       remove_ngsim=False)
         print("\nDone once.\n")
