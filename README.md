@@ -1,7 +1,8 @@
-This is the repository for our submission to ICRA 2020.
+This is the repository for `Online Parameter Estimation for Predicting Human Driver Behavior`.
 
-# Installation
-Here is how to get this repository to run.
+# Experiment instructions
+Please run the experiments as provided in the notebooks section. Detailed comments are provided within the notebooks
+explaining all the experiments and the associated function calls.
 
-# Usage
-Here is how to run the experiments reported in the paper
+# Contact info
+raunakbh at stanford dot edu
