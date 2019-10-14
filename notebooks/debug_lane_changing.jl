@@ -6,7 +6,9 @@ using Distributions
 using PGFPlots
 using JLD
 
-timestep_ngsim = 0.1
+# Define some global variables
+TIMESTEP = 0.1; ROADWAY = roadway_ngsim
+V_DES = 1; SIGMA_IDM = 2; T_HEADWAY = 3; S_MIN=4; POLITENESS = 5; ADV_TH = 6; SENSOR_SIGMA = 7
 
 """
     IDOverlay
@@ -53,7 +55,7 @@ function init_place_cars(lane_place_array;road_length = 1000.0)
 end
 
 function get_hallucination_scenes(start_scene;nsteps,models,start_step=1,
-        id_list=[],roadway,timestep=0.1,verbosity = false)
+        id_list=[],verbosity = false)
         # Setting up
     scene_halluc = start_scene
     halluc_scenes_list = []
@@ -66,22 +68,22 @@ function get_hallucination_scenes(start_scene;nsteps,models,start_step=1,
         actions = Array{Any}(undef,length(scene_halluc))
 
             # Propagation of scene forward
-        get_actions!(actions,scene_halluc,roadway,models)
+        get_actions!(actions,scene_halluc,ROADWAY,models)
 
-        tick!(scene_halluc,roadway,actions,timestep)
+        tick!(scene_halluc,ROADWAY,actions,TIMESTEP)
         
         push!(halluc_scenes_list,deepcopy(scene_halluc))
     end 
     return halluc_scenes_list
 end
 
-function scenelist2video(scene_list;roadway,
+function scenelist2video(scene_list;
     filename = "media/mobil/scene_to_video.mp4")
     frames = Frames(MIME("image/png"),fps = 10)
     
     # Loop over list of scenes and convert to video
     for i in 1:length(scene_list)
-        scene_visual = render(scene_list[i],roadway,
+        scene_visual = render(scene_list[i],ROADWAY,
         [IDOverlay(colorant"white",12),TextOverlay(text=["frame=$(i)"],font_size=12)],
 #         cam=FitToContentCamera(0.),
         cam = CarFollowCamera(1)
@@ -105,14 +107,14 @@ function get_lane_id(scene,car_id)
     return veh.state.posF.roadind.tag.lane
 end
 
-function scenelist2video_quantized(scene_list;roadway,
+function scenelist2video_quantized(scene_list;
     filename = "media/mobil/scene_to_video.mp4")
     frames = Frames(MIME("image/png"),fps = 5)
     
     # Loop over list of scenes and convert to video
     for i in 1:length(scene_list)
 	if i%5 == 0
-		scene_visual = render(scene_list[i],roadway,
+		scene_visual = render(scene_list[i],ROADWAY,
 		[IDOverlay(colorant"white",12),TextOverlay(text=["frame=$(i)"],font_size=12)],
 	#         cam=FitToContentCamera(0.),
 		cam = CarFollowCamera(1)
@@ -125,7 +127,9 @@ function scenelist2video_quantized(scene_list;roadway,
     return nothing
 end
 
-function hallucinate_a_step(roadway,scene_input,particle;car_id=-1)
+#-------------------Under development------------------------
+
+function hallucinate_a_step(scene_input,particle;car_id=-1)
 	if car_id==-1 @show "Please give a valid car_id" end
 	
 	scene = deepcopy(scene_input)
@@ -133,37 +137,109 @@ function hallucinate_a_step(roadway,scene_input,particle;car_id=-1)
 
 	for veh in scene
 		if veh.id == car_id
-			models[veh.id] = IntelligentDriverModel()
+			models[veh.id] = Tim2DDriver(TIMESTEP,
+						mlane=MOBIL(TIMESTEP,politeness=particle[POLITENESS],advantage_threshold=particle[ADV_TH]),
+						mlon = IntelligentDriverModel(v_des=particle[V_DES],sigma=particle[SIGMA_IDM],
+								T=particle[T_HEADWAY],s_min=particle[S_MIN])
+						)
+					)
+					
 		else
 			models[veh.id] = IntelligentDriverModel(v_des=50.)
 		end
 	end
 	actions = Array{Any}(undef,length(scene))
-	get_actions!(actions,scene,roadway,models)
-	tick!(scene,roadway,actions,timestep)
+	get_actions!(actions,scene,ROADWAY,models)
+	tick!(scene,ROADWAY,actions,TIMESTEP)
 
 	halluc_state = scene.entities[findfirst(car_id,scene)].state
 	halluc_pos = halluc_state.posF.s
-	halluc_pos = get_lane_id(scene,car_id)
+	halluc_lane = get_lane_id(scene,car_id)
+
+	return halluc_pos,halluc_lane
 end
 
-function overlay_jld_scenelists()
-	scene_list_1 = JLD.load("media/mobil/1.jld", "scene_list")
-	scene_list_2 = JLD.load("media/mobil/2.jld", "scene_list")
-	scene_list_3 = JLD.load("media/mobil/3.jld", "scene_list")
-	horizon = 100
-	py1 = PGFPlots.Plots.Scatter(collect(1:horizon),
-	    [scene[1].state.posG.y for scene in scene_list_1[1:horizon]],legendentry = "scenario 1")
-	py2 = PGFPlots.Plots.Scatter(collect(1:horizon),
-	    [scene[1].state.posG.y for scene in scene_list_2[1:horizon]],legendentry = "scenario 2")
-	py3 = PGFPlots.Plots.Scatter(collect(1:horizon),
-	    [scene[1].state.posG.y for scene in scene_list_3[1:horizon]],legendentry = "scenario 3")
-	pa = PGFPlots.Axis([py1,py2,py3],xlabel="timestep",ylabel="y position")
-	PGFPlots.save("media/mobil/overlay_scenes.pdf",pa)
-	return nothing
+function compute_particle_likelihoods(roadway,f,trupos,p_set_dict;car_id=-1)
+    if car_id==-1 @show "Please give valid car_id" end
+    timestep = 0.1 #TODO: Remove hardcoding
+    p_mat, params, vec_val_vec = to_matrix_form(p_set_dict)
+    
+    num_params=size(p_mat)[1]
+    num_p = size(p_mat)[2]
+    lkhd_vec = Array{Float64}(undef,num_p)
+    for i in 1:num_p    
+        # Create dict version for a single particle
+        p_dict = Dict()
+        for j in 1:num_params
+            p_dict[params[j]]=vec_val_vec[j][i]
+        end
+        
+        std_dev_acc = p_dict[:σ]
+        
+        # hack to avoid the std_dev_pos become negative and error Normal distb
+        if std_dev_acc <= 0 std_dev_acc = 0.1 end
+        
+        # TODO: This math needs to be verified from random variable calculations
+        std_dev_pos = timestep*timestep*std_dev_acc
+
+        hpos = hallucinate_a_step(roadway,f,p_dict,car_id=car_id)
+        lkhd_vec[i] = pdf(Normal(hpos,std_dev_pos),trupos[1])
+    end
+    return lkhd_vec,p_mat,params
 end
 
-#-------------------Running script begins here-----------------------
+"""
+- Start hallucination from `start_scene` and compare resulting hallucination against ground truth at `trupos`, `trulane`
+"""
+function compute_particle_likelihoods(start_scene,true_nextpos,true_nextlane,p_mat;car_id=-1)
+    if car_id==-1 @show "Please give valid car_id" end
+    num_p = size(p_mat[2])
+    lkhd_vec = Array{Float64}(undef,num_p)
+    for i in 1:num_p
+        particle = p_mat[:,i]
+        std_dev_acc = p_mat[SIGMA_IDM]
+        if std_dev_acc <= 0 std_dev_acc = 0.1 end
+        std_dev_pos = TIMESTEP*TIMESTEP*std_dev_acc
+        hpos,hlane = hallucinate_a_step(start_scene,particle,car_id=car_id)
+        start_lane = get_lane_id(start_scene,car_id)
+	lane_has_changed = false
+	if start_lane != true_nextlane
+		lane_has_changed = true
+	end
+
+	p_lanechange = get_lane_change_prob(start_scene,particle)
+
+	prob_lane = 0.5 # Initialize to random
+	if lane_has_changed
+		prob_lane = p_lanechange
+	else
+		prob_lane = 1-p_lanechange
+	end
+	prob_pos = pdf(Normal(hpos,std_dev_pos),true_nextpos)
+	lkhd_vec[i] = prob_lane*prob_pos
+    end
+end
+
+"""
+- Probability of lane changing start from `start_scene` and hallucinating using `particle` for `car_id` using `num_samplings` hallucinations
+"""
+function get_lane_change_prob(start_scene,particle;car_id=-1,num_samplings=10)
+    start_lane = get_lane_id(start_scene,car_id)
+    changed_count = 0; unchanged_count = 0
+    for i in 1:num_samplings
+        hpos,hlane = hallucinate_a_step(start_scene,particle,car_id=car_id)
+        if hlane == start_lane
+            unchanged_count += 1
+	else
+	    changed_count += 1
+	end
+    end
+    return changed_count/num_samplings
+end
+
+#----------------------------------------
+#	Running script begins here
+#----------------------------------------
 pos_vel_array_1 = [(200.,30.),(250.,0.)]
 pos_vel_array_2 = [(250.,10.)] #(280.,10.)
 pos_vel_array_3 = [(215.,0.),(225.,10.),(230.,0.)]
