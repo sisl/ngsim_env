@@ -211,13 +211,13 @@ print("\n_step called\n")
     # make sure number of actions passed in equals number of vehicles
     @assert size(action, 1) == env.n_veh
     ego_states = Vector{VehicleState}(undef, env.n_veh)
-@show env.ego_vehs
+
     # propagate all the vehicles and get their new states
     for (i, ego_veh) in enumerate(env.ego_vehs)
 	# convert action into form
 	ego_action = AccelTurnrate(action[i,:]...)
 	# ego_action = LatLonAccel(action[i,:]...) # RpB: To work with IDM+MOBIL
-print("_step! says: ego_veh.id = $(ego_veh.id)\n")
+
 	# propagate the ego vehicle
         ego_states[i] = propagate(
             ego_veh,
@@ -252,35 +252,44 @@ print("_step says env.t = $(env.t)\n")
 
     # Raunak adds in original vehicle properties
     step_infos = Dict{String, Vector{Float64}}(
-        #"rmse_pos"=>Float64[],
-        #"rmse_vel"=>Float64[],
+        "rmse_pos"=>Float64[],
+        "rmse_vel"=>Float64[],
         #"rmse_t"=>Float64[],
-        "x"=>Float64[],
-        "y"=>Float64[],
-        "s"=>Float64[],
-        "phi"=>Float64[],
-	"orig_x"=>Float64[],
-	"orig_y"=> Float64[],
-	"orig_theta"=>Float64[],
-	"orig_length"=>Float64[],
-	"orig_width"=>Float64[]
+        #"x"=>Float64[],
+        #"y"=>Float64[],
+        #"s"=>Float64[],
+        #"phi"=>Float64[],
+	#"orig_x"=>Float64[],
+	#"orig_y"=> Float64[],
+	#"orig_theta"=>Float64[],
+	#"orig_length"=>Float64[],
+	#"orig_width"=>Float64[]
     )
     for i in 1:env.n_veh
-        #push!(step_infos["rmse_pos"], sqrt(abs2((orig_vehs[i].state.posG - env.ego_vehs[i].state.posG))))
-        #push!(step_infos["rmse_vel"], sqrt(abs2((orig_vehs[i].state.v - env.ego_vehs[i].state.v))))
+        push!(step_infos["rmse_pos"], norm(orig_vehs[i].state.posG[1:2] - env.ego_vehs[i].state.posG[1:2]))
+        push!(step_infos["rmse_vel"], norm(orig_vehs[i].state.v - env.ego_vehs[i].state.v))
         #push!(step_infos["rmse_t"], sqrt(abs2((orig_vehs[i].state.posF.t - env.ego_vehs[i].state.posF.t))))
-        push!(step_infos["x"], env.ego_vehs[i].state.posG.x)
-        push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
-        push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
-        push!(step_infos["phi"], env.ego_vehs[i].state.posF.ϕ)
-	push!(step_infos["orig_x"], orig_vehs[i].state.posG.x)
-	push!(step_infos["orig_y"], orig_vehs[i].state.posG.y)
-	push!(step_infos["orig_theta"], orig_vehs[i].state.posG.θ)
-	push!(step_infos["orig_length"], orig_vehs[i].def.length)
-	push!(step_infos["orig_width"], orig_vehs[i].def.width)
+        #push!(step_infos["x"], env.ego_vehs[i].state.posG.x)
+        #push!(step_infos["y"], env.ego_vehs[i].state.posG.y)
+        #push!(step_infos["s"], env.ego_vehs[i].state.posF.s)
+        #push!(step_infos["phi"], env.ego_vehs[i].state.posF.ϕ)
+	#push!(step_infos["orig_x"], orig_vehs[i].state.posG.x)
+	#push!(step_infos["orig_y"], orig_vehs[i].state.posG.y)
+	#push!(step_infos["orig_theta"], orig_vehs[i].state.posG.θ)
+	#push!(step_infos["orig_length"], orig_vehs[i].def.length)
+	#push!(step_infos["orig_width"], orig_vehs[i].def.width)
+    end
+
+    # Raunak: Write rmse metrics to txt. Will be read into `highd.ipynb` to compare against filtering
+    # Each row is a timestep. Each column is a separate car
+    for (k,v) in step_infos
+        io = open(string(k*"_highd.txt"),"a")
+        writedlm(io,v')
+        close(io)
     end
 
     return step_infos
+
 end
 
 """
@@ -552,7 +561,7 @@ Write the record to a jld file. We will load the jld file into notebook for over
 """
 function _env_rec_write_jld(env::highd_env)
 print("_env_rec_write_jld being called")
-    JLD.save("../../notebooks/env_rec.jld","env_rec",env.rec)
+    JLD.save("../../notebooks/highd_rec.jld","env_rec",env.rec)
     return nothing
 end
 

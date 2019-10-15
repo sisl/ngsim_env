@@ -325,11 +325,11 @@ push!(env.store_scenes,deepcopy(env.scene))
     end
 
     # Raunak: Write rmse metrics to txt. Will be read into `idm_ngsim.ipynb` to compare against filtering
-    for (k,v) in step_infos
-        io = open(string("../../data/media/"*k*"_ngsim.txt"),"a")
-        writedlm(io,v')
-        close(io)
-    end
+#    for (k,v) in step_infos
+#        io = open(string("../../data/media/"*k*"_ngsim.txt"),"a")
+#        writedlm(io,v')
+#        close(io)
+#    end
 
     return step_infos
 end
@@ -402,6 +402,7 @@ function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Arr
     hardbrake_count = 0
 
     for i in 1:env.n_veh
+
 	is_colliding = features[i, env.infos_cache["is_colliding_idx"]]
 	is_offroad = features[i, env.infos_cache["out_of_lane_idx"]]
         accel = features[i, env.infos_cache["accel_idx"]]
@@ -426,9 +427,9 @@ function _compute_feature_infos(env::MultiagentNGSIMEnvVideoMaker, features::Arr
 		hardbrake_count+=1
 	end
     end
-	io = open("../../data/media/undesirable_instances_ngsim_gail.txt","a")
-        writedlm(io,[collision_count,offroad_count,hardbrake_count]')
-        close(io)
+	#io = open("../../data/media/undesirable_instances_ngsim_gail.txt","a")
+        #writedlm(io,[collision_count,offroad_count,hardbrake_count]')
+        #close(io)
     return feature_infos
 end
 

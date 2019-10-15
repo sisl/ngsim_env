@@ -87,6 +87,7 @@ docs/_build/
 *.jld
 *.txt
 *.csv
+*.jld2
 
 # notebook checkpoints
 *checkpoint*
@@ -126,6 +127,7 @@ CTestTestfile.cmake
 *.gif
 *.aux
 *.tex
+*.mp4
 
 # snapshots
 *snapshots*
