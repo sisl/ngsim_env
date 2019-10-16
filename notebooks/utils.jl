@@ -7,6 +7,15 @@
 # Purpose: Have a central core of functions that can be then called by different experiment scripts
 #***********************************************
 
+using NGSIM
+using AutomotiveDrivingModels
+using AutoViz
+using Reel
+using Distributions
+using PGFPlots
+using JLD
+using Random
+
 """
     IDOverlay
 Display the ID on top of each entity in a scene.
@@ -30,6 +39,7 @@ function AutoViz.render!(rendermodel::RenderModel, overlay::IDOverlay, scene::Sc
 end
 
 """
+    function init_place_cars(lane_place_array;road_length = 1000.0) 
 Place the cars in starting position according to `lane_place_array`
 """
 function init_place_cars(lane_place_array;road_length = 1000.0)
@@ -51,8 +61,10 @@ function init_place_cars(lane_place_array;road_length = 1000.0)
     return scene,roadway
 end
 
-function get_hallucination_scenes(start_scene;nsteps,models,start_step=1,
-        id_list=[],verbosity = false)
+"""
+
+"""
+function get_hallucination_scenes(start_scene;nsteps,models,start_step=1,id_list=[],verbosity = false)
         # Setting up
     scene_halluc = start_scene
     halluc_scenes_list = []
@@ -124,37 +136,55 @@ function scenelist2video_quantized(scene_list;
     return nothing
 end
 
+"""
+    function scenelist2ytrace(scene_list;car_id=-1)
+- Make a y position trace from a list of scenes
+
+# Examples
+```julia
+scenelist2ytrace(scene_list,car_id=1)
+```
+"""
+function scenelist2ytrace(scene_list;car_id=-1)
+    if car_id == -1 print("Please provide a valid car_id\n") end
+
+    p = PGFPlots.Plots.Scatter(collect(1:length(scene_list)),
+        [scene[findfirst(car_id,scene)].state.posG.y for scene in scene_list],legendentry="y trace")
+    return p
+end
+
 #-------------------Under development------------------------
 function hallucinate_a_step(scene_input,particle;car_id=-1)
-	if car_id==-1 @show "Please give a valid car_id" end
+    if car_id==-1 @show "Please give a valid car_id" end
 	
-	scene = deepcopy(scene_input)
-	models = Dict{Int64,DriverModel}()
+    scene = deepcopy(scene_input)
+    models = Dict{Int64,DriverModel}()
 
-	for veh in scene
-		if veh.id == car_id
-			models[veh.id] = Tim2DDriver(TIMESTEP,
-						mlane=MOBIL(TIMESTEP,politeness=particle[POLITENESS],
-								advantage_threshold=particle[ADV_TH],mlon=uncertain_IDM(sigma_sensor=20.)
-						),
-						mlon = IntelligentDriverModel(v_des=particle[V_DES],sigma=particle[SIGMA_IDM],
-								T=particle[T_HEADWAY],s_min=particle[S_MIN]
-						)
+    for veh in scene
+	if veh.id == car_id
+	    models[veh.id] = Tim2DDriver(TIMESTEP,
+					mlane=MOBIL(TIMESTEP,politeness=particle[POLITENESS],
+						advantage_threshold=particle[ADV_TH],mlon=uncertain_IDM(sigma_sensor=particle[SENSOR_SIGMA])
+					),
+					mlon = IntelligentDriverModel(v_des=particle[V_DES],σ=particle[SIGMA_IDM],
+						T=particle[T_HEADWAY],s_min=particle[S_MIN]
 					)
+				)
 					
-		else
-			models[veh.id] = IntelligentDriverModel(v_des=50.)
-		end
+	else
+		models[veh.id] = IntelligentDriverModel(v_des=50.)
 	end
-	actions = Array{Any}(undef,length(scene))
-	get_actions!(actions,scene,ROADWAY,models)
-	tick!(scene,ROADWAY,actions,TIMESTEP)
+    end
+	
+    actions = Array{Any}(undef,length(scene))
+    get_actions!(actions,scene,ROADWAY,models)
+    tick!(scene,ROADWAY,actions,TIMESTEP)
 
-	halluc_state = scene.entities[findfirst(car_id,scene)].state
-	halluc_pos = halluc_state.posF.s
-	halluc_lane = get_lane_id(scene,car_id)
+    halluc_state = scene.entities[findfirst(car_id,scene)].state
+    halluc_pos = halluc_state.posF.s
+    halluc_lane = get_lane_id(scene,car_id)
 
-	return halluc_pos,halluc_lane
+    return halluc_pos,halluc_lane
 end
 
 """
@@ -191,8 +221,14 @@ end
 
 """
 - Probability of lane changing start from `start_scene` and hallucinating using `particle` for `car_id` using `num_samplings` hallucinations
+
+# Examples
+```julia
+lp = get_lane_change_prob(scene,particle,car_id = 1)
+```
 """
 function get_lane_change_prob(start_scene,particle;car_id=-1,num_samplings=10)
+    if car_id==-1 @show "Please give valid car_id" end
     start_lane = get_lane_id(start_scene,car_id)
     changed_count = 0; unchanged_count = 0
     for i in 1:num_samplings

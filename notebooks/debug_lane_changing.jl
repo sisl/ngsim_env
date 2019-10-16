@@ -1,11 +1,7 @@
-using NGSIM
-using AutomotiveDrivingModels
-using AutoViz
-using Reel
-using Distributions
-using PGFPlots
-using JLD
-using Random
+"""
+- Written on: Oct 10
+- Purpose: Make video showing headway sensor noise measurement causes differing lane change
+"""
 
 include("utils.jl")
 
