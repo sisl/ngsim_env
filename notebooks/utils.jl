@@ -116,6 +116,29 @@ function get_lane_id(scene,car_id)
     return veh.state.posF.roadind.tag.lane
 end
 
+"""
+- Probability of lane changing start from `start_scene` and hallucinating using `particle` for `car_id` using `num_samplings` hallucinations
+
+# Examples
+```julia
+lp = get_lane_change_prob(scene,particle,car_id = 1)
+```
+"""
+function get_lane_change_prob(start_scene,particle;car_id=-1,num_samplings=10)
+    if car_id==-1 @show "Please give valid car_id" end
+    start_lane = get_lane_id(start_scene,car_id)
+    changed_count = 0; unchanged_count = 0
+    for i in 1:num_samplings
+        hpos,hlane = hallucinate_a_step(start_scene,particle,car_id=car_id)
+        if hlane == start_lane
+            unchanged_count += 1
+	else
+	    changed_count += 1
+	end
+    end
+    return changed_count/num_samplings
+end
+
 function scenelist2video_quantized(scene_list;
     filename = "media/mobil/scene_to_video.mp4")
     frames = Frames(MIME("image/png"),fps = 5)
@@ -217,27 +240,4 @@ function compute_particle_likelihoods(start_scene,true_nextpos,true_nextlane,p_m
 	prob_pos = pdf(Normal(hpos,std_dev_pos),true_nextpos)
 	lkhd_vec[i] = prob_lane*prob_pos
     end
-end
-
-"""
-- Probability of lane changing start from `start_scene` and hallucinating using `particle` for `car_id` using `num_samplings` hallucinations
-
-# Examples
-```julia
-lp = get_lane_change_prob(scene,particle,car_id = 1)
-```
-"""
-function get_lane_change_prob(start_scene,particle;car_id=-1,num_samplings=10)
-    if car_id==-1 @show "Please give valid car_id" end
-    start_lane = get_lane_id(start_scene,car_id)
-    changed_count = 0; unchanged_count = 0
-    for i in 1:num_samplings
-        hpos,hlane = hallucinate_a_step(start_scene,particle,car_id=car_id)
-        if hlane == start_lane
-            unchanged_count += 1
-	else
-	    changed_count += 1
-	end
-    end
-    return changed_count/num_samplings
 end
