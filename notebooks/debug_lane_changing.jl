@@ -26,17 +26,18 @@ param_names = Dict(1=>"Desired velocity",2=>"Acceleration output noise",3=>"Min 
     4=>"Min separation",5=>"Politeness",6=>"Advantage threshold",7=>"Headway sensor noise");
 
 # GROUND TRUTH DATA: Default model params 100 timesteps, returns true_scene_list
-JLD.load("media/mobil/data_jld/ground_truth.jld")
+true_scene_list = JLD.load("media/mobil/data_jld/ground_truth.jld","true_scene_list")
 
 # EXPERIMENT: Do filtering and then generate imitation trajectories with different random seeds
 #final_p_mat,iterwise_p_mat = multistep_update(car_id=1,start_frame=2,last_frame=99);
 
-JLD.load("media/mobil/data_jld/final_p.jld")
+final_p_mat = JLD.load("media/mobil/data_jld/final_p.jld","final_p_mat")
 seeds = collect(1:10)
 car_id = 1
 y_trace_plot = PGFPlots.Plots.Plot[]
 lanes_plot = PGFPlots.Plots.Plot[]
 for seed in seeds
+    print("seed = $(seed)\n")
     start_scene = deepcopy(SCENE)
     Random.seed!(seed)
     scene_list = gen_imitation_traj(final_p_mat,start_scene,start_step=1,nsteps=100,car_id=1)

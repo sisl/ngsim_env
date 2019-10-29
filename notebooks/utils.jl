@@ -557,7 +557,7 @@ function gen_imitation_traj(p_mat,start_scene;start_step,nsteps,id_list=[],car_i
                                     )
                             )
         else
-            models[veh.id] = IntelligentDriverModel(v_des=50.)
+            models[veh.id] = IntelligentDriverModel(v_des=15.)
         end
     end
     
@@ -569,7 +569,7 @@ function gen_imitation_traj(p_mat,start_scene;start_step,nsteps,id_list=[],car_i
 #     push!(halluc_scenes_list,deepcopy(scene_halluc))
     
     for (i,t) in enumerate(start_step:start_step+nsteps-1)
-        
+#print("gen imitation says: t=$t\n")
 #         if !isempty(id_list) keep_vehicle_subset!(scene_halluc,id_list) end
         
         actions = Array{Any}(undef,length(scene_halluc))
